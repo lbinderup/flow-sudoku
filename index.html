@@ -83,7 +83,7 @@ header{width:var(--cw);display:flex;align-items:center;justify-content:space-bet
 #genCover{background:color-mix(in srgb,var(--panel) 70%,transparent);backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px);font-size:15px;color:var(--muted)}
 .spinner{width:34px;height:34px;border-radius:50%;border:3px solid var(--line);border-top-color:var(--accent);animation:spin .8s linear infinite}
 @keyframes spin{to{transform:rotate(360deg)}}
-.tools{width:var(--cw);display:grid;grid-template-columns:repeat(7,1fr);gap:2px}
+.tools{width:var(--cw);display:grid;grid-template-columns:repeat(6,1fr);gap:2px}
 .tool{display:flex;flex-direction:column;align-items:center;gap:3px;padding:7px 0 5px;border-radius:12px;font-size:11px;white-space:nowrap;color:var(--btn-ink);position:relative}
 .tool:active{background:var(--btn)}
 .tool:disabled{opacity:.35}
@@ -91,8 +91,15 @@ header{width:var(--cw);display:flex;align-items:center;justify-content:space-bet
 .tool .badge{position:absolute;top:3px;right:calc(50% - 22px);font-size:9px;font-weight:700;background:var(--muted);color:var(--panel);border-radius:6px;padding:1px 4px}
 .tool.on .badge{background:var(--accent)}
 .tool.dim{opacity:.4}
-#lastBtn.ready{background:var(--accent-soft);color:var(--accent)}
-#lastBtn .badge{background:var(--accent);font-size:10px;right:calc(50% - 20px)}
+.pad .smart{gap:2px}
+.pad .smart .sl{font-size:12px;font-weight:600;color:var(--btn-ink);letter-spacing:.2px}
+.pad .smart.dim{opacity:.45}
+.pad .smart.ready{background:var(--accent);box-shadow:0 0 0 3px var(--accent-soft)}
+.pad .smart.ready svg{stroke:var(--panel)}
+.pad .smart.ready .sl{color:var(--panel)}
+[data-theme=dark] .pad .smart.ready svg{stroke:#0f1a20}
+[data-theme=dark] .pad .smart.ready .sl{color:#0f1a20}
+.pad .smart.err .sl{color:var(--conf)}
 .cell.warn{animation:warn .55s ease-out 2}
 @keyframes warn{0%{background:var(--conf);color:var(--panel)}20%{transform:translateX(-3px)}40%{transform:translateX(3px)}60%{transform:translateX(-2px)}100%{transform:none}}
 .pad{width:var(--cw);display:grid;grid-template-columns:repeat(5,1fr);gap:7px}
@@ -175,7 +182,6 @@ header{width:var(--cw);display:flex;align-items:center;justify-content:space-bet
     <button class="tool" id="eraseBtn"><svg viewBox="0 0 24 24"><path d="M20 20H8.5L4 15.5a2 2 0 0 1 0-2.8L12.7 4a2 2 0 0 1 2.8 0l4.5 4.5a2 2 0 0 1 0 2.8L11 20"/><path d="m9 9 7 7"/></svg>Erase</button>
     <button class="tool" id="notesBtn"><svg viewBox="0 0 24 24"><path d="M17 3a2.8 2.8 0 0 1 4 4L7.5 20.5 2 22l1.5-5.5z"/></svg>Notes<span class="badge" id="notesBadge">OFF</span></button>
     <button class="tool" id="autoBtn"><svg viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="3"/><path d="M8 8h.01M12 8h.01M16 8h.01M8 12h.01M12 12h.01M16 12h.01M8 16h.01M12 16h.01"/></svg>All notes</button>
-    <button class="tool" id="lastBtn"><svg viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="3"/><path d="M3 9h18M3 15h18M9 3v18M15 3v12"/><path d="m15.5 18 1.5 1.5 3-3.5"/></svg>Fill last<span class="badge" id="lastBadge" hidden></span></button>
     <button class="tool" id="lockBtn"><svg viewBox="0 0 24 24"><rect x="5" y="11" width="14" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg>Digit 1st</button>
   </div>
   <div class="pad" id="pad"></div>
@@ -556,9 +562,9 @@ for (let d = 1; d <= 9; d++) {
   b.innerHTML = `<span class="d">${d}</span><span class="n"></span>`;
   b.dataset.d = d; pad.appendChild(b); padBtns.push(b);
 }
-{ const b = document.createElement('button'); b.className = 'erase'; b.dataset.d = 0; b.setAttribute('aria-label', 'Erase');
-  b.innerHTML = '<svg viewBox="0 0 24 24"><path d="M21 5H9l-6 7 6 7h12a1 1 0 0 0 1-1V6a1 1 0 0 0-1-1z"/><path d="m17 9-6 6M11 9l6 6"/></svg>';
-  pad.appendChild(b); }
+const smartBtn = document.createElement('button'); smartBtn.className = 'erase smart'; smartBtn.dataset.d = 0; smartBtn.setAttribute('aria-label', 'Smart fill');
+smartBtn.innerHTML = '<svg viewBox="0 0 24 24"><path d="m4 20 11-11"/><path d="m13 7 4 4"/><path d="M18 2.5v3M16.5 4h3M20.5 8.5v2M19.5 9.5h2M9 3v2M8 4h2"/></svg><span class="sl">Smart</span>';
+pad.appendChild(smartBtn);
 
 // ---------- helpers ----------
 const fmt = ms => { const s = Math.floor(ms / 1000), h = Math.floor(s / 3600), m = Math.floor(s / 60) % 60, ss = s % 60; return (h ? h + ':' + String(m).padStart(2, '0') : m) + ':' + String(ss).padStart(2, '0'); };
@@ -656,36 +662,43 @@ function lastCellInfo(g, i) {
   });
   return res.length ? res : null;
 }
-function lastCellDigit(g, i) { // the digit if it can be placed cleanly, else 0
-  const info = lastCellInfo(g, i); if (!info) return 0;
-  const ds = new Set(); for (const u of info) { if (u.digits.length !== 1) return 0; ds.add(u.digits[0]); }
-  if (ds.size !== 1) return 0;
-  const d = [...ds][0];
-  return PEERS[i].some(p => g.vals[p] === d) ? 0 : d;
-}
 function warn(list) {
   for (const c of new Set(list)) { const el = cells[c].el; el.classList.remove('warn'); void el.offsetWidth; el.classList.add('warn'); }
   buzz([30, 40, 30]);
 }
-function fillLast() {
+// Smart fill: last empty cell in a row/column/box, or a cell whose notes are down to one number
+function smartAnalyze(g, i) {
+  if (!g || g.solved) return { state: 'none' };
+  if (i < 0) return { state: 'none', msg: 'Select an empty cell first' };
+  if (g.vals[i]) return { state: 'none', msg: 'That cell is already filled', warn: [i] };
+  const info = lastCellInfo(g, i);
+  const nm = g.notes[i], noteD = nm && !(nm & (nm - 1)) ? Math.log2(nm) + 1 : 0;
+  let d = 0, src = '';
+  if (info) {
+    for (const u of info) if (u.digits.length !== 1) {
+      const seen = {}, dup = [];
+      for (const c of u.U) { const v = g.vals[c]; if (!v) continue; if (seen[v] !== undefined) dup.push(c, seen[v]); else seen[v] = c; }
+      return { state: 'err', msg: `This ${u.name} has a duplicate`, warn: [i, ...dup] };
+    }
+    const ds = [...new Set(info.map(u => u.digits[0]))];
+    if (ds.length > 1) return { state: 'err', msg: info.map(u => `${u.name} needs ${u.digits[0]}`).join(', '), warn: [i] };
+    d = ds[0]; src = info[0].name;
+    if (noteD && noteD !== d) return { state: 'err', msg: `Your note says ${noteD}, but the ${src} needs ${d}`, warn: [i] };
+  } else if (noteD) { d = noteD; src = 'note'; }
+  else return { state: 'none', msg: 'Nothing to fill: not the last cell in a line, and notes are not down to one number', warn: [i] };
+  const clash = PEERS[i].filter(p => g.vals[p] === d);
+  if (clash.length) {
+    const where = [...new Set(clash.map(p => ROW[p] === ROW[i] ? 'row' : COL[p] === COL[i] ? 'column' : 'box'))].join(' and ');
+    return { state: 'err', d, msg: `${d} is already in this ${where}`, warn: [i, ...clash] };
+  }
+  return { state: 'ok', d, src };
+}
+function smartFill() {
   const g = G(); if (!g || g.solved) return;
-  if (sel < 0) { toast('Select an empty cell first'); return; }
-  if (g.vals[sel]) { toast('That cell is already filled'); warn([sel]); return; }
-  const info = lastCellInfo(g, sel);
-  if (!info) { toast('Not the last empty cell in its row, column or box'); warn([sel]); return; }
-  for (const u of info) if (u.digits.length !== 1) {
-    const seen = {}, dup = [];
-    for (const c of u.U) { const v = g.vals[c]; if (!v) continue; if (seen[v] !== undefined) dup.push(c, seen[v]); else seen[v] = c; }
-    toast(`This ${u.name} has a duplicate`); warn([sel, ...dup]); return;
-  }
-  const ds = [...new Set(info.map(u => u.digits[0]))];
-  if (ds.length > 1) {
-    toast(info.map(u => `${u.name} needs ${u.digits[0]}`).join(', '));
-    warn([sel]); return;
-  }
-  const d = ds[0], clash = PEERS[sel].filter(p => g.vals[p] === d);
-  if (clash.length) { const where = [...new Set(clash.map(p => ROW[p] === ROW[sel] ? 'row' : COL[p] === COL[sel] ? 'column' : 'box'))].join(' and '); toast(`${d} is already in this ${where}`); warn([sel, ...clash]); return; }
-  setValue(sel, d);
+  const a = smartAnalyze(g, sel);
+  if (a.state === 'ok') { setValue(sel, a.d); return; }
+  if (a.msg) toast(a.msg);
+  if (a.warn) warn(a.warn);
 }
 function celebrateUnits(i) {
   const g = G(); const bad = conflicts(g);
@@ -742,15 +755,16 @@ function render() {
     $('#metaL').textContent = TIERS[tier]; $('#metaR').textContent = '';
     cells.forEach(c => { c.el.className = c.base; c.v.textContent = ''; c.ns.forEach(s => s.className = ''); });
     $('#hintLine').textContent = '';
+    smartBtn.className = 'erase smart dim';
     return;
   }
   $('#metaL').textContent = `${TIERS[tier]} · ${g.clues} clues`;
   $('#metaR').textContent = g.solved ? 'Solved' : `${g.vals.filter(v => !v).length} to go`;
   $('#undoBtn').disabled = g.solved || !g.undo.length;
   $('#redoBtn').disabled = g.solved || !g.redo.length;
-  { const info = lastCellInfo(g, sel), d = info ? lastCellDigit(g, sel) : 0, b = $('#lastBtn'), bd = $('#lastBadge');
-    b.classList.toggle('ready', !!d); b.classList.toggle('dim', !info);
-    bd.hidden = !info; bd.textContent = d || '!'; bd.style.background = d ? '' : 'var(--conf)'; }
+  { const a = smartAnalyze(g, sel), sl = smartBtn.querySelector('.sl');
+    smartBtn.classList.toggle('ready', a.state === 'ok'); smartBtn.classList.toggle('err', a.state === 'err'); smartBtn.classList.toggle('dim', a.state === 'none');
+    sl.textContent = a.state === 'ok' ? `Fill ${a.d}` : a.state === 'err' ? 'Clash!' : 'Smart'; }
   const bad = settings.conflicts ? conflicts(g) : new Set();
   const act = activeDigit(g);
   const abit = act ? 1 << (act - 1) : 0;
@@ -820,7 +834,7 @@ pad.addEventListener('pointerdown', e => {
 pad.addEventListener('click', e => {
   const b = e.target.closest('button'); if (!b) return;
   if (longFired) { longFired = false; return; }
-  if (b.dataset.d === '0') { if (sel >= 0) erase(sel); else toast('Select a cell to erase'); return; }
+  if (b.dataset.d === '0') { smartFill(); return; }
   pressDigit(+b.dataset.d);
 });
 function pressDigit(d) {
@@ -837,7 +851,6 @@ $('#redoBtn').onclick = redo;
 $('#eraseBtn').onclick = () => { if (sel >= 0) erase(sel); else toast('Select a cell to erase'); };
 $('#notesBtn').onclick = () => { notesMode = !notesMode; buzz(); render(); };
 $('#autoBtn').onclick = fillNotes;
-$('#lastBtn').onclick = fillLast;
 $('#lockBtn').onclick = () => { lockMode = !lockMode; if (lockMode) { const g = G(); lockDigit = g && sel >= 0 ? g.vals[sel] : 0; } buzz(); render(); };
 $('#timerBtn').onclick = () => { const g = G(); if (!g || g.solved) return; paused = !paused; render(); };
 $('#pauseCover').onclick = () => { paused = false; render(); };
@@ -870,7 +883,7 @@ document.addEventListener('keydown', e => {
     render(); return;
   }
   if (k === 'n' || k === 'N') { notesMode = !notesMode; render(); }
-  if (k === 'f' || k === 'F' || k === 'Enter') { e.preventDefault(); fillLast(); }
+  if (k === 'f' || k === 'F' || k === 'Enter') { e.preventDefault(); smartFill(); }
   if (k === 'p' || k === 'P' || k === ' ') { e.preventDefault(); paused = !paused; render(); }
   if (k === 'Escape') { sel = -1; render(); }
 });
@@ -962,11 +975,11 @@ function showSettings() {
     <h3>How it works</h3>
     <div class="help">
       <p><b>Tap a cell, then a number.</b> Or switch on <b>Digit first</b> (or hold a number) to pick a number and then tap cells.</p>
-      <p><b>Fill last</b> lights up when the selected cell is the only empty one in its row, column or box, and shows the number that goes there. Tap it to place that number. If it would clash with a number already on the board, the clashing cells flash and nothing is placed.</p>
+      <p><b>Smart fill</b> (bottom right of the number pad) lights up and shows a number when it can fill the selected cell: either the cell is the only empty one in its row, column or box, or your notes in it are down to one number. If that number would clash with one already on the board, the clashing cells flash and nothing is placed.</p>
       <p><b>Notes</b> toggles pencil marks. <b>All notes</b> writes every candidate in one step (undoable).</p>
       <p><b>Low tedium:</b> every puzzle is checked by a solver so you always have at least 3 moves open. You never have to hunt for the one cell that works.</p>
       <p><b>Easy</b> needs only singles. <b>Medium</b> needs pointing pairs, box-line, naked or hidden pairs and triples. <b>Hard</b> needs X-Wing, XY-Wing, XYZ-Wing or Swordfish.</p>
-      <p>Keyboard: 1-9, Shift+digit for notes, arrows, Backspace, N notes, F fill last, P pause, Ctrl+Z / Ctrl+Y.</p>
+      <p>Keyboard: 1-9, Shift+digit for notes, arrows, Backspace, N notes, F smart fill, P pause, Ctrl+Z / Ctrl+Y.</p>
     </div>`);
   sheet.querySelectorAll('.switch').forEach(b => b.onclick = () => { const k = b.dataset.k; settings[k] = !settings[k]; b.classList.toggle('on', settings[k]); saveSettings(); render(); });
   sheet.querySelectorAll('#themeSeg button').forEach(b => b.onclick = () => { settings.theme = b.dataset.v; saveSettings(); applyTheme(); sheet.querySelectorAll('#themeSeg button').forEach(x => x.classList.toggle('on', x === b)); });
