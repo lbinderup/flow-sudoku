@@ -85,7 +85,7 @@ header{width:var(--cw);display:flex;align-items:center;justify-content:space-bet
 #genCover{background:color-mix(in srgb,var(--panel) 70%,transparent);backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px);font-size:15px;color:var(--muted)}
 .spinner{width:34px;height:34px;border-radius:50%;border:3px solid var(--line);border-top-color:var(--accent);animation:spin .8s linear infinite}
 @keyframes spin{to{transform:rotate(360deg)}}
-.tools{width:var(--cw);display:grid;grid-template-columns:repeat(6,1fr);gap:2px}
+.tools{width:var(--cw);display:grid;grid-template-columns:repeat(7,1fr);gap:2px}
 .tool{display:flex;flex-direction:column;align-items:center;gap:3px;padding:7px 0 5px;border-radius:12px;font-size:11px;white-space:nowrap;color:var(--btn-ink);position:relative}
 .tool:active{background:var(--btn)}
 .tool:disabled{opacity:.35}
@@ -243,6 +243,7 @@ body.hunt .coach{display:block}
     <button class="tool" id="notesBtn"><svg viewBox="0 0 24 24"><path d="M17 3a2.8 2.8 0 0 1 4 4L7.5 20.5 2 22l1.5-5.5z"/></svg>Notes<span class="badge" id="notesBadge">OFF</span></button>
     <button class="tool" id="autoBtn"><svg viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="3"/><path d="M8 8h.01M12 8h.01M16 8h.01M8 12h.01M12 12h.01M16 12h.01M8 16h.01M12 16h.01"/></svg>All notes</button>
     <button class="tool" id="lockBtn"><svg viewBox="0 0 24 24"><rect x="5" y="11" width="14" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg>Digit 1st</button>
+    <button class="tool" id="trainerBtn" disabled><svg viewBox="0 0 24 24"><path d="M3 9.5 12 5l9 4.5-9 4.5z"/><path d="M7 11.5V16c1.5 1.3 3.2 2 5 2s3.5-.7 5-2v-4.5"/><path d="M21 9.5V15"/></svg>Trainer</button>
   </div>
   <div class="tools train">
     <button class="tool" id="hintBtn"><svg viewBox="0 0 24 24"><path d="M9 18h6M10 21h4"/><path d="M12 3a6 6 0 0 0-3.6 10.8c.6.5 1 1.2 1 2V16h5.2v-.2c0-.8.4-1.5 1-2A6 6 0 0 0 12 3z"/></svg><span id="hintLbl">Show me</span></button>
@@ -1116,7 +1117,7 @@ const SETTING_ROWS = [
   ['autoClean', 'Auto-clear notes', 'Placing a number removes it from notes in its row, column and box'],
   ['counts', 'Show remaining counts', 'How many of each number are left, under the pad'],
   ['showTimer', 'Show timer', 'Time is still tracked when hidden'],
-  ['coach', 'Coach in Medium and Hard', 'When no singles are left, offer to train on the pattern that\'s needed'],
+  ['coach', 'Trainer in Medium and Hard', 'The Trainer button turns on when the next move needs a pattern'],
   ['haptics', 'Haptic taps', 'Vibrate on input, where supported'],
 ];
 function showSettings() {
@@ -1496,8 +1497,7 @@ function renderTrainUI(g) {
   $('#exitLbl').textContent = tier === 4 ? 'Next' : 'Exit';
   $('#newBtn').textContent = tier === 4 ? 'Next' : 'New';
   document.querySelectorAll('#techChips button').forEach(b => b.classList.toggle('on', b.dataset.t === trainTech));
-  const hl = $('#hintLine');
-  if (!hunt && coachReady && tier !== 4) hl.innerHTML = `<button class="coach-cta" id="coachCta">Hard moment: no singles left · Train on it</button>`;
+  $('#trainerBtn').disabled = !coachReady;
   drawHunt(g); drawCounts(g);
 }
 { const chips = $('#techChips');
@@ -1508,7 +1508,7 @@ $('#hintBtn').onclick = huntHint;
 $('#applyBtn').onclick = huntApply;
 $('#countsBtn').onclick = () => { settings.tcounts = !settings.tcounts; saveSettings(); if (!focusD) toast('Tap a number below to see its line counts'); render(); };
 $('#exitBtn').onclick = exitHunt;
-$('#hintLine').addEventListener('click', e => { if (e.target.closest('#coachCta')) startCoach(); });
+$('#trainerBtn').onclick = startCoach;
 
 // ---------- boot ----------
 ensureGame(tier);
