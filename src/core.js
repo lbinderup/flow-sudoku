@@ -78,8 +78,8 @@ function pointing(st, acc) {
       const bit = 1 << d; let rs = -1, cs = -1, cnt = 0, rowOk = true, colOk = true; const cells = [];
       for (const c of U) if (cands[c] & bit) { cells.push(c); if (rs < 0) { rs = ROW[c]; cs = COL[c]; } else { if (ROW[c] !== rs) rowOk = false; if (COL[c] !== cs) colOk = false; } cnt++; }
       if (cnt < 2) continue;
-      if (rowOk) { const el = []; for (const c of UNITS[rs]) if (BOX[c] !== b && (cands[c] & bit)) el.push([c, bit]); if (el.length) { acc.push({ tech: 'Pointing', elims: el, cells, digit: d + 1, box: b, line: rs }); if (acc.length >= acc.limit) return true; } }
-      if (colOk) { const el = []; for (const c of UNITS[9 + cs]) if (BOX[c] !== b && (cands[c] & bit)) el.push([c, bit]); if (el.length) { acc.push({ tech: 'Pointing', elims: el, cells, digit: d + 1, box: b, line: 9 + cs }); if (acc.length >= acc.limit) return true; } }
+      if (rowOk) { const el = []; for (const c of UNITS[rs]) if (BOX[c] !== b && (cands[c] & bit)) el.push([c, bit]); if (el.length || acc.all) { acc.push({ tech: 'Pointing', elims: el, cells, digit: d + 1, box: b, line: rs }); if (acc.length >= acc.limit) return true; } }
+      if (colOk) { const el = []; for (const c of UNITS[9 + cs]) if (BOX[c] !== b && (cands[c] & bit)) el.push([c, bit]); if (el.length || acc.all) { acc.push({ tech: 'Pointing', elims: el, cells, digit: d + 1, box: b, line: 9 + cs }); if (acc.length >= acc.limit) return true; } }
     }
   }
   return null;
@@ -93,7 +93,7 @@ function claiming(st, acc) {
       for (const c of U) if (cands[c] & bit) { cells.push(c); if (bx < 0) bx = BOX[c]; else if (BOX[c] !== bx) { ok = false; break; } }
       if (!ok || cells.length < 2) continue;
       const el = []; for (const c of UNITS[18 + bx]) if (!U.includes(c) && (cands[c] & bit)) el.push([c, bit]);
-      if (el.length) { acc.push({ tech: 'Box-line', elims: el, cells, digit: d + 1, line: u, box: bx }); if (acc.length >= acc.limit) return true; }
+      if (el.length || acc.all) { acc.push({ tech: 'Box-line', elims: el, cells, digit: d + 1, line: u, box: bx }); if (acc.length >= acc.limit) return true; }
     }
   }
   return null;
@@ -107,7 +107,7 @@ function nakedSubset(st, k, acc) {
       let un = 0; for (const c of cb) un |= cands[c];
       if (POP[un] !== k) continue;
       const el = []; for (const c of U) if (!cb.includes(c) && (cands[c] & un)) el.push([c, cands[c] & un]);
-      if (el.length) { acc.push({ tech: k === 2 ? 'Naked pair' : 'Naked triple', elims: el, cells: cb, unit: u, digits: un }); if (acc.length >= acc.limit) return true; }
+      if (el.length || acc.all) { acc.push({ tech: k === 2 ? 'Naked pair' : 'Naked triple', elims: el, cells: cb, unit: u, digits: un }); if (acc.length >= acc.limit) return true; }
     }
   }
   return null;
@@ -123,7 +123,7 @@ function hiddenSubset(st, k, acc) {
       if (POP[pm] !== k) continue;
       const el = [], cells = [];
       for (let j = 0; j < 9; j++) if (pm & (1 << j)) { const c = U[j]; cells.push(c); if (cands[c] & ~dm) el.push([c, cands[c] & ~dm]); }
-      if (el.length) { acc.push({ tech: k === 2 ? 'Hidden pair' : 'Hidden triple', elims: el, cells, unit: u, digits: dm }); if (acc.length >= acc.limit) return true; }
+      if (el.length || acc.all) { acc.push({ tech: k === 2 ? 'Hidden pair' : 'Hidden triple', elims: el, cells, unit: u, digits: dm }); if (acc.length >= acc.limit) return true; }
     }
   }
   return null;
@@ -148,7 +148,7 @@ function fish(st, k, acc) {
           if (!(cands[c] & bit)) continue;
           if (cb.includes(l)) cells.push(c); else el.push([c, bit]);
         }
-        if (el.length) { acc.push({ tech: name, elims: el, cells, digit: d + 1, orient, base: cb.slice(), coverMask: un }); if (acc.length >= acc.limit) return true; }
+        if (el.length || acc.all) { acc.push({ tech: name, elims: el, cells, digit: d + 1, orient, base: cb.slice(), coverMask: un }); if (acc.length >= acc.limit) return true; }
       }
     }
   }
@@ -164,7 +164,7 @@ function xyWing(st, acc) {
       for (const r of PEERS[p]) {
         if (r === q || cands[r] !== target) continue;
         const el = []; for (let x = 0; x < 81; x++) if (x !== p && (cands[x] & z) && sees(x, q) && sees(x, r)) el.push([x, z]);
-        if (el.length) { acc.push({ tech: 'XY-Wing', elims: el, cells: [p, q, r], digit: DIG[z] }); if (acc.length >= acc.limit) return true; }
+        if (el.length || acc.all) { acc.push({ tech: 'XY-Wing', elims: el, cells: [p, q, r], digit: DIG[z] }); if (acc.length >= acc.limit) return true; }
       }
     }
   }
@@ -179,7 +179,7 @@ function xyzWing(st, acc) {
       const q = pin[a], r = pin[b]; if ((cands[q] | cands[r]) !== m) continue;
       const z = cands[q] & cands[r]; if (POP[z] !== 1) continue;
       const el = []; for (let x = 0; x < 81; x++) if (x !== p && x !== q && x !== r && (cands[x] & z) && sees(x, p) && sees(x, q) && sees(x, r)) el.push([x, z]);
-      if (el.length) { acc.push({ tech: 'XYZ-Wing', elims: el, cells: [p, q, r], digit: DIG[z] }); if (acc.length >= acc.limit) return true; }
+      if (el.length || acc.all) { acc.push({ tech: 'XYZ-Wing', elims: el, cells: [p, q, r], digit: DIG[z] }); if (acc.length >= acc.limit) return true; }
     }
   }
   return null;
@@ -267,8 +267,8 @@ const TECH_FN = {
 };
 const TECH_TIER = { 'Pointing': 2, 'Box-line': 2, 'Naked pair': 2, 'Hidden pair': 2, 'Naked triple': 2, 'Hidden triple': 2, 'X-Wing': 3, 'XY-Wing': 3, 'XYZ-Wing': 3, 'Swordfish': 3 };
 // All distinct productive instances of one technique in a state
-function enumerateTech(st, name) {
-  const a = mkAcc(300); TECH_FN[name](st, a);
+function enumerateTech(st, name, all) {
+  const a = mkAcc(all ? 1500 : 300); a.all = !!all; TECH_FN[name](st, a);
   const seen = new Set(), out = [];
   for (const s of a) {
     if (s.tech !== name) continue;

@@ -187,6 +187,7 @@ body.hunt .coach{display:block}
 #huntOv .pc{fill:var(--accent);fill-opacity:.22;stroke:var(--accent);stroke-width:.5}
 #huntOv .pcell{fill:none;stroke:var(--accent);stroke-width:.7}
 #huntOv .pcell.piv{stroke-width:1.2}
+#huntOv .pcell.nofx{stroke:var(--muted);stroke-dasharray:1.4 1}
 #huntOv .ln{stroke:var(--accent);stroke-width:.55;stroke-opacity:.85;stroke-dasharray:1.3 .9;fill:none}
 #huntOv .ex{stroke:var(--conf);stroke-width:.6;stroke-linecap:round;fill:none}
 .counts{position:absolute;display:none;font-size:11px;font-weight:600;color:var(--muted);font-variant-numeric:tabular-nums}
@@ -426,7 +427,32 @@ pad.addEventListener('animationend', e => { const b = e.target.closest('button')
 
 // ---------- helpers ----------
 const fmt = ms => { const s = Math.floor(ms / 1000), h = Math.floor(s / 3600), m = Math.floor(s / 60) % 60, ss = s % 60; return (h ? h + ':' + String(m).padStart(2, '0') : m) + ':' + String(ss).padStart(2, '0'); };
-const buzz = (ms = 8) => { if (settings.haptics) try { navigator.vibrate && navigator.vibrate(ms); } catch (e) { } };
+// Haptics: Vibration API where it exists (Android); on iPhone, toggling a hidden
+// <input type=checkbox switch> plays the system haptic tick (Safari 18+).
+const IS_IOS = /iP(hone|ad|od)/.test(navigator.userAgent) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+let iosSwitch = null;
+function iosTick() {
+  try {
+    if (!iosSwitch) {
+      const l = document.createElement('label'), inp = document.createElement('input');
+      l.setAttribute('aria-hidden', 'true');
+      l.style.cssText = 'position:fixed;left:-200px;top:0;width:1px;height:1px;overflow:hidden;opacity:0;pointer-events:none';
+      inp.type = 'checkbox'; inp.setAttribute('switch', ''); inp.tabIndex = -1;
+      l.appendChild(inp); document.body.appendChild(l); iosSwitch = l;
+    }
+    iosSwitch.click();
+  } catch (e) { }
+}
+const buzz = (ms = 8) => {
+  if (!settings.haptics) return;
+  if (IS_IOS) {
+    // 1 tick for taps, 2 for completions and finds, 3 for clashes and wins
+    const n = Array.isArray(ms) ? (ms[0] >= 30 ? 3 : 2) : ms >= 60 ? 3 : ms >= 20 ? 2 : 1;
+    iosTick(); for (let k = 1; k < n; k++) setTimeout(iosTick, k * 85);
+    return;
+  }
+  try { navigator.vibrate && navigator.vibrate(ms); } catch (e) { }
+};
 let toastT = 0;
 function toast(msg) { const t = $('#toast'); t.textContent = msg; t.classList.add('show'); clearTimeout(toastT); toastT = setTimeout(() => t.classList.remove('show'), 1700); }
 function conflicts(g) {
@@ -882,7 +908,7 @@ const SETTING_ROWS = [
   ['counts', 'Show remaining counts', 'How many of each number are left, under the pad'],
   ['showTimer', 'Show timer', 'Time is still tracked when hidden'],
   ['coach', 'Trainer in Medium and Hard', 'The Trainer button turns on when the next move needs a pattern'],
-  ['haptics', 'Haptic taps', 'Vibrate on input, where supported'],
+  ['haptics', 'Haptic taps', 'Android, and iPhone with iOS 18 or later'],
 ];
 function showSettings() {
   const rows = SETTING_ROWS.map(([k, l, s]) => `<div class="row"><div><div class="lbl">${l}</div><div class="sub">${s}</div></div><button class="switch ${settings[k] ? 'on' : ''}" data-k="${k}" aria-label="${l}"></button></div>`).join('');
@@ -934,10 +960,39 @@ const article = t => /^[AEIOUX]/.test(t) ? 'an' : 'a';
 function stFrom(g) {
   return { vals: Int8Array.from(g.vals), cands: Uint16Array.from(g.notes.map((n, i) => g.vals[i] ? 0 : n)) };
 }
-function allInstances(st, onlyTech) {
+function allInstances(st, onlyTech, all) {
   const list = [];
-  for (const t of onlyTech ? [onlyTech] : TECHS) list.push(...enumerateTech(st, t));
+  for (const t of onlyTech ? [onlyTech] : TECHS) list.push(...enumerateTech(st, t, all));
   return list;
+}
+// Shared units of a set of cells (row, column, box)
+function sharedUnits(cs) {
+  const u = [];
+  if (cs.every(c => ROW[c] === ROW[cs[0]])) u.push(ROW[cs[0]]);
+  if (cs.every(c => COL[c] === COL[cs[0]])) u.push(9 + COL[cs[0]]);
+  if (cs.every(c => BOX[c] === BOX[cs[0]])) u.push(18 + BOX[cs[0]]);
+  return u;
+}
+// A naked subset clears its numbers from every unit its cells share, not just one
+function fullElims(inst, cands) {
+  if (inst.tech !== 'Naked pair' && inst.tech !== 'Naked triple') return inst;
+  const el = [], seen = new Set();
+  for (const u of sharedUnits(inst.cells)) for (const c of UNITS[u]) {
+    if (inst.cells.includes(c) || seen.has(c) || !(cands[c] & inst.digits)) continue;
+    seen.add(c); el.push([c, cands[c] & inst.digits]);
+  }
+  return Object.assign({}, inst, { elims: el, units: sharedUnits(inst.cells) });
+}
+function noEffectMsg(inst, cands) {
+  const t = inst.tech;
+  let what = '', why = '';
+  if (t === 'Naked pair' || t === 'Naked triple') {
+    const ds = digitsOf(inst.digits), us = sharedUnits(inst.cells).map(unitName);
+    what = ` (${andList(ds)})`; why = `, because nothing else in ${orList(us)} has ${orList(ds)} as a candidate`;
+  } else if (t === 'Hidden pair' || t === 'Hidden triple') {
+    what = ` (${andList(digitsOf(inst.digits))} in ${unitName(inst.unit)})`; why = `, because these cells have no other candidates to remove`;
+  } else if (inst.digit) what = ` on ${inst.digit}`;
+  return `Good eye: that's a real ${t}${what}. It just doesn't remove any candidates here${why}. Keep looking for one that does.`;
 }
 const TIPS = {
   'Pointing': 'Pick a number and check each box: are all of its spots in one row or column?',
@@ -1021,7 +1076,8 @@ function makeHunt(src, tech, techKnown) {
   let insts = allInstances(st, src === 'drill' && techKnown ? tech : null);
   if (!insts.length) return null;
   insts.sort((a, b) => (a.tech === tech ? 0 : 1) - (b.tech === tech ? 0 : 1));
-  const h = { src, tech: tech || insts[0].tech, techKnown, insts, found: new Set(), stage: 0, done: false, revealed: false, applied: false, regions: [], cur: null, solvedInst: null, msg: '', title: '' };
+  const struct = allInstances(st, src === 'drill' && techKnown ? tech : null, true);
+  const h = { src, tech: tech || insts[0].tech, techKnown, insts, struct, nofx: null, found: new Set(), stage: 0, done: false, revealed: false, applied: false, regions: [], cur: null, solvedInst: null, msg: '', title: '' };
   h.msg = introMsg(h);
   return h;
 }
@@ -1044,7 +1100,27 @@ function huntTap(i) {
   if (g.vals[i]) { h.msg = `That cell is already solved. Patterns live in the notes: tap a cell with candidates.`; render(); return; }
   if (h.found.has(i)) { h.found.delete(i); h.msg = h.found.size ? 'Unmarked. Keep going, or tap it again to re-mark.' : introMsg(h); h.regions = []; render(); return; }
   const cands = stFrom(g).cands;
+  h.nofx = null;
   let C = consistent(h).filter(inst => inst.cells.includes(i));
+  if (!C.length) {
+    // Any genuine pattern counts, even one the trainer wasn't aiming at
+    const S = h.struct.filter(inst => inst.cells.includes(i) && [...h.found].every(c => inst.cells.includes(c)));
+    if (S.length) {
+      h.found.add(i); h.regions = [];
+      if (!h.techKnown) h.techKnown = true;
+      const done = S.find(inst => inst.cells.every(c => h.found.has(c)));
+      if (done) {
+        const full = fullElims(done, cands);
+        if (full.elims.length) { huntSuccess(full, false); render(); return; }
+        h.nofx = done; h.cur = done; h.found = new Set();
+        h.msg = noEffectMsg(done, cands); buzz(20);
+      } else {
+        h.cur = S[0];
+        h.msg = 'Marked. Keep going.'; buzz();
+      }
+      render(); return;
+    }
+  }
   if (!C.length && h.insts.some(inst => inst.cells.includes(i))) { h.found = new Set(); C = h.insts.filter(inst => inst.cells.includes(i)); }
   if (C.length) {
     h.found.add(i);
@@ -1052,7 +1128,7 @@ function huntTap(i) {
     const inst = C[0]; h.cur = inst;
     if (!h.techKnown) h.techKnown = true;
     if (inst.digit && DIGIT_TECH[inst.tech]) focusD = inst.digit;
-    if (inst.cells.every(c => h.found.has(c))) { huntSuccess(inst, false); render(); return; }
+    if (inst.cells.every(c => h.found.has(c))) { huntSuccess(fullElims(inst, cands), false); render(); return; }
     const gd = guide(inst, h.found, i, cands);
     h.msg = gd.msg; h.regions = gd.regions; buzz();
     render(); return;
@@ -1091,7 +1167,7 @@ function huntHint() {
     const gd = guide(inst, h.found, [...h.found][0], cands);
     const gm = gd.msg.replace(/^Yes[.,] /, ''); h.msg = `I've marked one piece. ${gm[0].toUpperCase() + gm.slice(1)}`; h.regions = regions;
   } else {
-    huntSuccess(inst, true);
+    huntSuccess(fullElims(inst, cands), true);
   }
   buzz(); render();
 }
@@ -1215,6 +1291,7 @@ function drawHunt(g) {
       s += `<rect class="pcell${piv ? ' piv' : ''}" x="${COL[c] * 10 + .7}" y="${ROW[c] * 10 + .7}" width="8.6" height="8.6" rx="1.6"/>`;
     }
   }
+  if (h.nofx) for (const c of h.nofx.cells) s += `<rect class="pcell nofx" x="${COL[c] * 10 + .7}" y="${ROW[c] * 10 + .7}" width="8.6" height="8.6" rx="1.6"/>`;
   if (inst && h.done && !h.applied) for (const [c, m] of inst.elims) for (const d of digitsOf(m)) {
     const [x, y] = notePos(c, d), r = 1.25;
     s += `<path class="ex" d="M${f(x - r)} ${f(y - r)}L${f(x + r)} ${f(y + r)}M${f(x + r)} ${f(y - r)}L${f(x - r)} ${f(y + r)}"/>`;
