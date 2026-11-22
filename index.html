@@ -205,6 +205,10 @@ body.hunt .coach{display:block}
 .tstats{width:100%;border-collapse:collapse;font-size:13.5px}
 .tstats td{padding:6px 2px;border-bottom:1px solid var(--line)}
 .tstats td+td{text-align:right;font-variant-numeric:tabular-nums;color:var(--muted)}
+.hap{position:absolute;inset:0;z-index:4;cursor:pointer;-webkit-tap-highlight-color:transparent}
+.hap input{position:absolute;left:0;top:0;width:1px;height:1px;margin:0;opacity:0;visibility:hidden;pointer-events:none}
+body.nohap .hap{display:none}
+.pad button{position:relative}
 #toast{position:fixed;left:50%;bottom:calc(env(safe-area-inset-bottom) + 26px);transform:translate(-50%,20px);background:var(--ink);color:var(--bg);padding:10px 16px;border-radius:12px;font-size:14px;opacity:0;pointer-events:none;transition:all .25s;z-index:30;white-space:nowrap}
 #toast.show{opacity:1;transform:translate(-50%,0)}
 .board-wrap.won #board .cell{animation:wave .6s ease-out both}
@@ -728,30 +732,20 @@ pad.addEventListener('animationend', e => { const b = e.target.closest('button')
 
 // ---------- helpers ----------
 const fmt = ms => { const s = Math.floor(ms / 1000), h = Math.floor(s / 3600), m = Math.floor(s / 60) % 60, ss = s % 60; return (h ? h + ':' + String(m).padStart(2, '0') : m) + ':' + String(ss).padStart(2, '0'); };
-// Haptics: Vibration API where it exists (Android); on iPhone, toggling a hidden
-// <input type=checkbox switch> plays the system haptic tick (Safari 18+).
+// Haptics: Vibration API on Android. iPhone has no vibration API; since iOS 26.5 Safari only
+// plays its switch haptic when a real finger tap lands on a <label> wrapping an
+// <input type=checkbox switch>, so tappable elements get an invisible switch label on top.
 const IS_IOS = /iP(hone|ad|od)/.test(navigator.userAgent) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
-let iosSwitch = null;
-function iosTick() {
-  try {
-    if (!iosSwitch) {
-      const l = document.createElement('label'), inp = document.createElement('input');
-      l.setAttribute('aria-hidden', 'true');
-      l.style.cssText = 'position:fixed;left:-200px;top:0;width:1px;height:1px;overflow:hidden;opacity:0;pointer-events:none';
-      inp.type = 'checkbox'; inp.setAttribute('switch', ''); inp.tabIndex = -1;
-      l.appendChild(inp); document.body.appendChild(l); iosSwitch = l;
-    }
-    iosSwitch.click();
-  } catch (e) { }
+function addHaptic(el) {
+  if (!IS_IOS || !el || el.querySelector(':scope > .hap')) return;
+  const l = document.createElement('label'), inp = document.createElement('input');
+  l.className = 'hap'; l.setAttribute('aria-hidden', 'true');
+  inp.type = 'checkbox'; inp.setAttribute('switch', ''); inp.tabIndex = -1;
+  inp.addEventListener('click', e => e.stopPropagation()); // the label's echo click must not reach our handlers
+  l.appendChild(inp); el.appendChild(l);
 }
 const buzz = (ms = 8) => {
-  if (!settings.haptics) return;
-  if (IS_IOS) {
-    // 1 tick for taps, 2 for completions and finds, 3 for clashes and wins
-    const n = Array.isArray(ms) ? (ms[0] >= 30 ? 3 : 2) : ms >= 60 ? 3 : ms >= 20 ? 2 : 1;
-    iosTick(); for (let k = 1; k < n; k++) setTimeout(iosTick, k * 85);
-    return;
-  }
+  if (!settings.haptics || IS_IOS) return;
   try { navigator.vibrate && navigator.vibrate(ms); } catch (e) { }
 };
 let toastT = 0;
@@ -1209,7 +1203,7 @@ const SETTING_ROWS = [
   ['counts', 'Show remaining counts', 'How many of each number are left, under the pad'],
   ['showTimer', 'Show timer', 'Time is still tracked when hidden'],
   ['coach', 'Trainer in Medium and Hard', 'The Trainer button turns on when the next move needs a pattern'],
-  ['haptics', 'Haptic taps', 'Android, and iPhone with iOS 18 or later'],
+  ['haptics', 'Haptic taps', 'A tick on taps (iPhone needs System Haptics on)'],
 ];
 function showSettings() {
   const rows = SETTING_ROWS.map(([k, l, s]) => `<div class="row"><div><div class="lbl">${l}</div><div class="sub">${s}</div></div><button class="switch ${settings[k] ? 'on' : ''}" data-k="${k}" aria-label="${l}"></button></div>`).join('');
@@ -1230,7 +1224,7 @@ function showSettings() {
       <p><b>Train</b> serves drills: a board from a real puzzle where a technique is the next move, with all candidates filled in. Tap cells you think are part of the pattern and it tells you where to look next. Tap a number to highlight its candidates and see how many spots it has in each row and column.</p>
       <p>Keyboard: 1-9, Shift+digit for notes, arrows, Backspace, N notes, F smart fill, P pause, Ctrl+Z / Ctrl+Y.</p>
     </div>`);
-  sheet.querySelectorAll('.switch').forEach(b => b.onclick = () => { const k = b.dataset.k; settings[k] = !settings[k]; b.classList.toggle('on', settings[k]); saveSettings(); render(); });
+  sheet.querySelectorAll('.switch').forEach(b => b.onclick = () => { const k = b.dataset.k; settings[k] = !settings[k]; b.classList.toggle('on', settings[k]); saveSettings(); syncHaptics(); render(); });
   sheet.querySelectorAll('#themeSeg button').forEach(b => b.onclick = () => { settings.theme = b.dataset.v; saveSettings(); applyTheme(); sheet.querySelectorAll('#themeSeg button').forEach(x => x.classList.toggle('on', x === b)); });
   $('#clearNotes').onclick = () => { const g = G(); if (!g || g.solved) return; const ch = []; for (let i = 0; i < 81; i++) if (g.notes[i]) ch.push([i, 0, g.notes[i], 0, 0]); if (commit(ch)) toast('Notes cleared'); closeModal(); };
   $('#restartBtn').onclick = () => confirmSheet('Restart this puzzle?', 'All your numbers and notes will be cleared and the timer resets.', 'Restart', restart);
@@ -1662,6 +1656,12 @@ $('#exitBtn').onclick = exitHunt;
 $('#trainerBtn').onclick = startCoach;
 
 // ---------- boot ----------
+if (IS_IOS) {
+  cells.forEach(c => addHaptic(c.el));
+  document.querySelectorAll('#pad button, .tool, #tiers button, #newBtn').forEach(addHaptic);
+}
+const syncHaptics = () => document.body.classList.toggle('nohap', !settings.haptics);
+syncHaptics();
 if (games[tier]) deal();
 ensureGame(tier);
 syncHunt();
