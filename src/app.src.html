@@ -40,9 +40,9 @@ header{width:var(--cw);display:flex;align-items:center;justify-content:space-bet
 .timer.hide-time span{display:none}
 .bar{width:var(--cw);display:flex;align-items:center;gap:8px}
 .tiers{flex:1;display:flex;background:var(--btn);border-radius:13px;padding:3px;position:relative}
-.tiers button{flex:1;padding:8px 0;border-radius:10px;font-weight:500;font-size:15px;color:var(--muted);position:relative;z-index:1;transition:color .2s}
+.tiers button{flex:1;padding:8px 0;border-radius:10px;font-weight:500;font-size:14.5px;color:var(--muted);position:relative;z-index:1;transition:color .2s}
 .tiers button.on{color:var(--ink)}
-.tiers .pill{position:absolute;top:3px;bottom:3px;left:3px;width:calc((100% - 6px)/3);border-radius:10px;background:var(--panel);box-shadow:0 1px 4px rgba(0,0,0,.12);transition:transform .25s cubic-bezier(.3,.7,.3,1)}
+.tiers .pill{position:absolute;top:3px;bottom:3px;left:3px;width:calc((100% - 6px)/4);border-radius:10px;background:var(--panel);box-shadow:0 1px 4px rgba(0,0,0,.12);transition:transform .25s cubic-bezier(.3,.7,.3,1)}
 .tiers button .dot{display:inline-block;width:6px;height:6px;border-radius:50%;background:var(--notehi);margin-left:5px;vertical-align:2px;opacity:0;transition:opacity .2s}
 .tiers button.prog .dot{opacity:.9}
 .new-btn{padding:10px 14px;border-radius:13px;background:var(--accent);color:var(--panel);font-weight:600;font-size:15px;white-space:nowrap}
@@ -151,6 +151,58 @@ header{width:var(--cw);display:flex;align-items:center;justify-content:space-bet
 .chip{font-size:12.5px;padding:5px 10px;border-radius:20px;background:var(--btn);color:var(--btn-ink)}
 .help p{font-size:14.5px;line-height:1.5;margin:6px 0;color:var(--ink)}
 .help b{font-weight:600}
+/* training */
+#techChips{width:var(--cw);display:none;gap:6px;overflow-x:auto;scrollbar-width:none;padding:1px 0;-webkit-overflow-scrolling:touch}
+#techChips::-webkit-scrollbar{display:none}
+body.train #techChips{display:flex}
+body.train .meta{display:none}
+body.train #timerBtn{visibility:hidden}
+.tchip{flex:none;padding:6px 12px;border-radius:16px;background:var(--btn);font-size:13.5px;color:var(--btn-ink);white-space:nowrap}
+.tchip.on{background:var(--accent);color:var(--panel)}
+[data-theme=dark] .tchip.on{color:#0f1a20}
+.tools.train{display:none;grid-template-columns:repeat(4,1fr)}
+body.hunt .tools.main{display:none}
+body.hunt .tools.train{display:grid}
+.tool.ready{background:var(--accent);color:var(--panel)}
+[data-theme=dark] .tool.ready{color:#0f1a20}
+body.hunt #app{--bs:min(calc(100vw - 40px),calc(100vh - 420px),520px);--bs:min(calc(100vw - 40px),calc(100dvh - 420px),520px)}
+body.hunt .board-wrap{margin:14px 0 0 18px}
+body.hunt .pad{grid-template-columns:repeat(9,1fr);gap:4px}
+body.hunt .pad .smart{display:none}
+body.hunt .pad button{padding:8px 0;border-radius:11px}
+body.hunt .pad .d{font-size:clamp(20px,calc(var(--cw) / 15),28px)}
+body.hunt .pad .n{display:none}
+body.hunt .pad button.focus{background:var(--notehi)}
+body.hunt .pad button.focus .d{color:var(--panel)}
+.coach{width:var(--cw);display:none;background:var(--panel);border-radius:14px;padding:9px 13px 10px;box-shadow:0 2px 10px rgba(0,0,0,.07);min-height:66px}
+body.hunt .coach{display:block}
+.coach .ct{font-size:11.5px;font-weight:600;color:var(--accent);text-transform:uppercase;letter-spacing:.7px;display:flex;justify-content:space-between;gap:8px}
+.coach .ct .cs{color:var(--muted);text-transform:none;letter-spacing:0;font-weight:500}
+.coach .cm{font-size:14.5px;line-height:1.42;margin-top:3px}
+.coach.ok .ct span:first-child{color:#3c9a5f}
+.coach.ok{box-shadow:0 0 0 2px #3c9a5f55}
+#huntOv{position:absolute;inset:2.5px;pointer-events:none;z-index:3}
+#huntOv svg{display:block;width:100%;height:100%}
+#huntOv .rg{fill:var(--accent);fill-opacity:.11;stroke:var(--accent);stroke-opacity:.6;stroke-width:.4}
+#huntOv .pc{fill:var(--accent);fill-opacity:.22;stroke:var(--accent);stroke-width:.5}
+#huntOv .pcell{fill:none;stroke:var(--accent);stroke-width:.7}
+#huntOv .pcell.piv{stroke-width:1.2}
+#huntOv .ln{stroke:var(--accent);stroke-width:.55;stroke-opacity:.85;stroke-dasharray:1.3 .9;fill:none}
+#huntOv .ex{stroke:var(--conf);stroke-width:.6;stroke-linecap:round;fill:none}
+.counts{position:absolute;display:none;font-size:11px;font-weight:600;color:var(--muted);font-variant-numeric:tabular-nums}
+.counts.show{display:grid}
+.counts span{display:flex;align-items:center;justify-content:center}
+.counts span.k2{color:var(--panel);background:var(--notehi);border-radius:5px;margin:1px}
+.counts span.k3{color:var(--notehi)}
+.counts span.kp{opacity:.45;font-size:10px}
+#colCounts{top:-16px;left:2.5px;right:2.5px;height:14px;grid-template-columns:repeat(9,1fr)}
+#rowCounts{left:-17px;top:2.5px;bottom:2.5px;width:15px;grid-template-rows:repeat(9,1fr)}
+.coach-cta{font:inherit;font-size:13px;font-weight:600;color:var(--panel);background:var(--notehi);padding:7px 13px;border-radius:12px;animation:ctaIn .3s ease-out}
+[data-theme=dark] .coach-cta{color:#1b1d23}
+@keyframes ctaIn{from{transform:translateY(6px);opacity:0}}
+.tstats{width:100%;border-collapse:collapse;font-size:13.5px}
+.tstats td{padding:6px 2px;border-bottom:1px solid var(--line)}
+.tstats td+td{text-align:right;font-variant-numeric:tabular-nums;color:var(--muted)}
 #toast{position:fixed;left:50%;bottom:calc(env(safe-area-inset-bottom) + 26px);transform:translate(-50%,20px);background:var(--ink);color:var(--bg);padding:10px 16px;border-radius:12px;font-size:14px;opacity:0;pointer-events:none;transition:all .25s;z-index:30;white-space:nowrap}
 #toast.show{opacity:1;transform:translate(-50%,0)}
 .board-wrap.won #board .cell{animation:wave .6s ease-out both}
@@ -168,17 +220,22 @@ header{width:var(--cw);display:flex;align-items:center;justify-content:space-bet
     </div>
   </header>
   <div class="bar">
-    <div class="tiers" id="tiers"><div class="pill" id="pill"></div><button data-t="1">Easy<span class="dot"></span></button><button data-t="2">Medium<span class="dot"></span></button><button data-t="3">Hard<span class="dot"></span></button></div>
+    <div class="tiers" id="tiers"><div class="pill" id="pill"></div><button data-t="1">Easy<span class="dot"></span></button><button data-t="2">Medium<span class="dot"></span></button><button data-t="3">Hard<span class="dot"></span></button><button data-t="4">Train</button></div>
     <button class="new-btn" id="newBtn">New</button>
   </div>
   <div class="meta"><span id="metaL"></span><span id="metaR"></span></div>
+  <div id="techChips"></div>
   <div class="board-wrap" id="boardWrap">
     <div id="board"></div>
     <div id="scan"></div>
+    <div id="huntOv"></div>
+    <div class="counts" id="colCounts"></div>
+    <div class="counts" id="rowCounts"></div>
     <div class="cover" id="pauseCover"><svg viewBox="0 0 24 24"><path d="M8 5.5v13a1 1 0 0 0 1.5.9l10-6.5a1 1 0 0 0 0-1.7l-10-6.5A1 1 0 0 0 8 5.5z"/></svg>Paused - tap to resume</div>
     <div class="cover" id="genCover"><div class="spinner"></div><div id="genTxt">Generating a smooth puzzle</div></div>
   </div>
-  <div class="tools">
+  <div class="coach" id="coachCard"><div class="ct" id="coachTitle"></div><div class="cm" id="coachMsg"></div></div>
+  <div class="tools main">
     <button class="tool" id="undoBtn"><svg viewBox="0 0 24 24"><path d="M9 14 4 9l5-5"/><path d="M4 9h10.5a5.5 5.5 0 0 1 0 11H11"/></svg>Undo</button>
     <button class="tool" id="redoBtn"><svg viewBox="0 0 24 24"><path d="m15 14 5-5-5-5"/><path d="M20 9H9.5a5.5 5.5 0 0 0 0 11H13"/></svg>Redo</button>
     <button class="tool" id="eraseBtn"><svg viewBox="0 0 24 24"><path d="M20 20H8.5L4 15.5a2 2 0 0 1 0-2.8L12.7 4a2 2 0 0 1 2.8 0l4.5 4.5a2 2 0 0 1 0 2.8L11 20"/><path d="m9 9 7 7"/></svg>Erase</button>
@@ -186,15 +243,24 @@ header{width:var(--cw);display:flex;align-items:center;justify-content:space-bet
     <button class="tool" id="autoBtn"><svg viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="3"/><path d="M8 8h.01M12 8h.01M16 8h.01M8 12h.01M12 12h.01M16 12h.01M8 16h.01M12 16h.01"/></svg>All notes</button>
     <button class="tool" id="lockBtn"><svg viewBox="0 0 24 24"><rect x="5" y="11" width="14" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg>Digit 1st</button>
   </div>
+  <div class="tools train">
+    <button class="tool" id="hintBtn"><svg viewBox="0 0 24 24"><path d="M9 18h6M10 21h4"/><path d="M12 3a6 6 0 0 0-3.6 10.8c.6.5 1 1.2 1 2V16h5.2v-.2c0-.8.4-1.5 1-2A6 6 0 0 0 12 3z"/></svg><span id="hintLbl">Show me</span></button>
+    <button class="tool" id="countsBtn"><svg viewBox="0 0 24 24"><path d="M4 7h4M4 12h4M4 17h4"/><path d="M12 7h8M12 12h8M12 17h8" opacity=".45"/></svg>Line counts</button>
+    <button class="tool" id="applyBtn"><svg viewBox="0 0 24 24"><path d="m5 12.5 4.5 4.5L19 7.5"/></svg>Apply</button>
+    <button class="tool" id="exitBtn"><svg viewBox="0 0 24 24"><path d="M5 12h14M13 6l6 6-6 6"/></svg><span id="exitLbl">Next</span></button>
+  </div>
   <div class="pad" id="pad"></div>
   <div class="hint-line" id="hintLine"></div>
 </div>
 <div class="modal" id="modal"><div class="sheet" id="sheet"></div></div>
 <div id="toast"></div>
 
-<script type="text/js-worker" id="wsrc">
+<script id="coreSrc">
 /*CORE*/
+</script>
+<script type="text/js-worker" id="wsrc">
 onmessage = e => {
+  if (e.data.type === 'harvest') { postMessage({ type: 'harvest', list: harvest(e.data.ms) }); return; }
   const tier = e.data.tier, t0 = Date.now();
   let r = null, attempts = 0;
   while (!r) {
@@ -203,7 +269,7 @@ onmessage = e => {
     attempts++;
   }
   r.ms = Date.now() - t0; r.attempts = attempts;
-  postMessage({ tier, data: r });
+  postMessage({ type: 'gen', tier, data: r });
 };
 </script>
 
@@ -211,7 +277,7 @@ onmessage = e => {
 (() => {
 'use strict';
 const $ = s => document.querySelector(s);
-const TIERS = { 1: 'Easy', 2: 'Medium', 3: 'Hard' };
+const TIERS = { 1: 'Easy', 2: 'Medium', 3: 'Hard', 4: 'Train' };
 const ROW = [], COL = [], BOX = [], UNITS = [], PEERS = [];
 for (let i = 0; i < 81; i++) { const r = (i / 9) | 0, c = i % 9; ROW[i] = r; COL[i] = c; BOX[i] = ((r / 3) | 0) * 3 + ((c / 3) | 0); }
 for (let r = 0; r < 9; r++) UNITS.push([...Array(9)].map((_, c) => r * 9 + c));
@@ -224,11 +290,11 @@ const LS = {
   get(k, d) { try { const v = localStorage.getItem(k); return v ? JSON.parse(v) : d; } catch (e) { return d; } },
   set(k, v) { try { localStorage.setItem(k, JSON.stringify(v)); } catch (e) { } }
 };
-const DEF = { peers: true, same: true, noteHi: true, conflicts: true, autoClean: true, counts: true, showTimer: true, scan: false, haptics: true, theme: 'auto' };
+const DEF = { peers: true, same: true, noteHi: true, conflicts: true, autoClean: true, counts: true, showTimer: true, scan: false, haptics: true, theme: 'auto', coach: true, tcounts: true };
 const settings = Object.assign({}, DEF, LS.get('fs.settings', {}));
 const stats = Object.assign({ 1: {}, 2: {}, 3: {} }, LS.get('fs.stats', {}));
 for (const t of [1, 2, 3]) stats[t] = Object.assign({ started: 0, solved: 0, best: 0, total: 0, streak: 0, bestStreak: 0 }, stats[t]);
-const games = Object.assign({ 1: null, 2: null, 3: null }, LS.get('fs.games', {}));
+const games = Object.assign({ 1: null, 2: null, 3: null, 4: null }, LS.get('fs.games', {}));
 const buffer = Object.assign({}, LS.get('fs.buffer', {}));
 let tier = LS.get('fs.tier', 1);
 const saveGames = () => LS.set('fs.games', games);
@@ -244,9 +310,10 @@ const G = () => games[tier];
 let worker = null;
 const inflight = {}, want = {};
 try {
-  const src = document.getElementById('wsrc').textContent;
+  const src = document.getElementById('coreSrc').textContent + '\n' + document.getElementById('wsrc').textContent;
   worker = new Worker(URL.createObjectURL(new Blob([src], { type: 'text/javascript' })));
   worker.onmessage = e => {
+    if (e.data.type === 'harvest') { onHarvest(e.data.list); return; }
     const { tier: t, data } = e.data; inflight[t] = false;
     if (want[t]) { want[t] = false; startGame(t, data); }
     else { buffer[t] = data; saveBuffer(); }
@@ -255,18 +322,20 @@ try {
 } catch (e) { console.error(e); }
 function request(t) {
   if (inflight[t] || !worker) return;
-  inflight[t] = true; worker.postMessage({ tier: t });
+  inflight[t] = true; worker.postMessage({ type: 'gen', tier: t });
 }
 function pump() { // keep one ready puzzle per tier, current tier first
-  for (const t of [tier, 1, 2, 3]) if (!buffer[t] && !inflight[t] && !want[t]) { request(t); return; }
+  for (const t of [tier <= 3 ? tier : 1, 1, 2, 3]) if (!buffer[t] && !inflight[t] && !want[t]) { request(t); return; }
+  harvest();
 }
 function ensureGame(t) {
+  if (t === 4) { syncHunt(); render(); return; }
   if (games[t]) return;
   if (buffer[t]) { const d = buffer[t]; delete buffer[t]; saveBuffer(); startGame(t, d); pump(); }
   else { want[t] = true; request(t); }
   render();
 }
-function newGame(t) { games[t] = null; saveGames(); if (t === tier) { sel = -1; } ensureGame(t); }
+function newGame(t) { if (t === 4) { startDrill(); return; } games[t] = null; saveGames(); if (t === tier) { sel = -1; } ensureGame(t); }
 function startGame(t, d) {
   games[t] = { tier: t, puzzle: d.puzzle, solution: d.solution, vals: d.puzzle.slice(), notes: Array(81).fill(0),
     elapsed: 0, solved: false, techs: d.techs, clues: d.clues, undo: [], redo: [], id: Date.now() };
@@ -326,6 +395,7 @@ function candidates(g, i) {
   return 511 & ~used;
 }
 function activeDigit(g) {
+  if (hunt || tier === 4) return focusD;
   if (lockMode) return lockDigit;
   return sel >= 0 ? g.vals[sel] : 0;
 }
@@ -457,7 +527,7 @@ function celebrateUnits(i) {
 }
 function afterChange() {
   const g = G();
-  if (g && !g.solved && g.vals.every((v, i) => v === g.solution[i])) win();
+  if (g && g.tier !== 4 && !g.solved && g.vals.every((v, i) => v === g.solution[i])) win();
   render();
 }
 function win() {
@@ -509,6 +579,7 @@ function render() {
   });
   $('#pill').style.transform = `translateX(${(tier - 1) * 100}%)`;
   $('#genCover').classList.toggle('show', !g);
+  $('#genTxt').textContent = tier === 4 ? 'Finding drills in generated puzzles' : 'Generating a smooth puzzle';
   $('#pauseCover').classList.toggle('show', !!(g && paused && !g.solved));
   board.style.filter = '';
   $('#timeTxt').textContent = g ? fmt(g.elapsed) : '0:00';
@@ -523,10 +594,10 @@ function render() {
     cells.forEach(c => { c.el.className = c.base; c.v.textContent = ''; c.ns.forEach(s => s.className = ''); });
     $('#hintLine').textContent = '';
     smartBtn.className = 'erase smart dim';
-    drawScan(null);
+    drawScan(null); renderTrainUI(null);
     return;
   }
-  $('#metaL').textContent = `${TIERS[tier]} · ${g.clues} clues`;
+  $('#metaL').textContent = hunt && hunt.src === 'coach' ? `${TIERS[tier]} · coaching` : `${TIERS[tier]} · ${g.clues} clues`;
   $('#metaR').textContent = g.solved ? 'Solved' : `${g.vals.filter(v => !v).length} to go`;
   $('#undoBtn').disabled = g.solved || !g.undo.length;
   $('#redoBtn').disabled = g.solved || !g.redo.length;
@@ -550,11 +621,11 @@ function render() {
     counts[v]++;
     let cls = c.base + (g.puzzle[i] ? ' given' : v ? ' user' : '');
     if (blocked && !v && blocked.has(i)) cls += ' blocked';
-    if (!g.solved && settings.peers && sel >= 0 && i !== sel && (ROW[i] === ROW[sel] || COL[i] === COL[sel] || BOX[i] === BOX[sel])) cls += ' peer';
+    if (!g.solved && !hunt && settings.peers && sel >= 0 && i !== sel && (ROW[i] === ROW[sel] || COL[i] === COL[sel] || BOX[i] === BOX[sel])) cls += ' peer';
     if (!g.solved && settings.same && act && v === act) cls += ' same';
     if (bad.has(i) && !g.puzzle[i]) cls += ' conf';
     else if (bad.has(i)) cls += ' conf-given';
-    if (i === sel && !g.solved) cls += ' sel';
+    if (i === sel && !g.solved && !hunt) cls += ' sel';
     const keep = c.el.className.match(/\b(flash|pop|warn)\b/g);
     if (keep) cls += ' ' + keep.join(' ');
     c.el.className = cls;
@@ -562,19 +633,22 @@ function render() {
     const nm = v ? 0 : g.notes[i];
     for (let d = 0; d < 9; d++) {
       const on = nm & (1 << d);
-      c.ns[d].className = on ? (settings.noteHi && abit === (1 << d) && !g.solved ? 'on hi' : 'on') : '';
+      c.ns[d].className = on ? ((settings.noteHi || hunt) && abit === (1 << d) && !g.solved ? 'on hi' : 'on') : '';
     }
   }
   for (let d = 1; d <= 9; d++) {
     const b = padBtns[d - 1], left = 9 - counts[d];
     b.querySelector('.n').textContent = left > 0 ? left : '';
     b.classList.toggle('done', left <= 0);
-    b.classList.toggle('lock', lockMode && lockDigit === d);
+    b.classList.toggle('lock', !hunt && lockMode && lockDigit === d);
+    b.classList.toggle('focus', !!hunt && focusD === d);
   }
   let hint = '';
   if (g.solved) hint = 'Solved! Tap New for another.';
   else if (lockMode) hint = lockDigit ? `Digit first: tap cells to ${notesMode ? 'note' : 'place'} ${lockDigit}` : 'Digit first: pick a number below';
   $('#hintLine').textContent = hint;
+  coachReady = !hunt && tier !== 4 && !!coachState(g);
+  renderTrainUI(g);
 }
 
 // ---------- input ----------
@@ -583,6 +657,8 @@ board.addEventListener('click', e => {
   if (!el || !g || g.solved) return;
   if (paused) { paused = false; render(); return; }
   const i = +el.dataset.i;
+  if (hunt) { huntTap(i); return; }
+  if (tier === 4) return;
   if (lockMode) {
     if (g.puzzle[i] || (g.vals[i] && g.vals[i] !== lockDigit)) { lockDigit = g.vals[i]; sel = i; render(); return; }
     sel = i;
@@ -597,13 +673,14 @@ let pressT = 0, longFired = false;
 pad.addEventListener('pointerdown', e => {
   const b = e.target.closest('button'); if (!b) return;
   longFired = false; clearTimeout(pressT);
-  if (b.dataset.d === '0') return;
+  if (b.dataset.d === '0' || hunt) return;
   pressT = setTimeout(() => { longFired = true; lockMode = true; lockDigit = +b.dataset.d; buzz(25); toast(`Digit first: ${lockDigit}`); render(); }, 450);
 });
 ['pointerup', 'pointerleave', 'pointercancel'].forEach(ev => pad.addEventListener(ev, () => clearTimeout(pressT)));
 pad.addEventListener('click', e => {
   const b = e.target.closest('button'); if (!b) return;
   if (longFired) { longFired = false; return; }
+  if (hunt || tier === 4) { const d = +b.dataset.d; if (d) { focusD = focusD === d ? 0 : d; buzz(); render(); } return; }
   if (b.dataset.d === '0') { smartFill(); return; }
   pressDigit(+b.dataset.d);
 });
@@ -626,11 +703,14 @@ $('#timerBtn').onclick = () => { const g = G(); if (!g || g.solved) return; paus
 $('#pauseCover').onclick = () => { paused = false; render(); };
 document.querySelectorAll('#tiers button').forEach(b => b.onclick = () => {
   const t = +b.dataset.t; if (t === tier) return;
-  tier = t; LS.set('fs.tier', t); sel = -1; lockDigit = 0; paused = false;
+  tier = t; LS.set('fs.tier', t); sel = -1; lockDigit = 0; lockMode = false; paused = false;
+  if (hunt) { hunt = null; } focusD = 0;
   clearFx();
-  ensureGame(t); pump(); render();
+  ensureGame(t); syncHunt(); pump(); render();
 });
 $('#newBtn').onclick = () => {
+  if (tier === 4) { startDrill(); return; }
+  if (hunt) { hunt = null; focusD = 0; }
   const g = G();
   if (g && !g.solved && g.undo.length) confirmSheet(`Start a new ${TIERS[tier]} puzzle?`, 'Your progress on this one will be lost and it counts as unsolved.', 'New puzzle', () => { stats[tier].streak = 0; saveStats(); newGame(tier); });
   else newGame(tier);
@@ -639,6 +719,7 @@ document.addEventListener('keydown', e => {
   if (modalOpen) { if (e.key === 'Escape') closeModal(); return; }
   const g = G(); if (!g) return;
   const k = e.key;
+  if (hunt || tier === 4) { if (/^[1-9]$/.test(k)) { focusD = focusD === +k ? 0 : +k; render(); } if (k === 'h' || k === 'H') huntHint(); return; }
   if ((e.ctrlKey || e.metaKey) && k.toLowerCase() === 'z') { e.preventDefault(); e.shiftKey ? redo() : undo(); return; }
   if ((e.ctrlKey || e.metaKey) && k.toLowerCase() === 'y') { e.preventDefault(); redo(); return; }
   if (/^[1-9]$/.test(k)) {
@@ -663,7 +744,7 @@ let last = performance.now(), saveTick = 0;
 setInterval(() => {
   const now = performance.now(), dt = now - last; last = now;
   const g = G();
-  if (g && !g.solved && !paused && !modalOpen && document.visibilityState === 'visible') {
+  if (g && g.tier !== 4 && !g.solved && !paused && !modalOpen && document.visibilityState === 'visible') {
     g.elapsed += dt;
     const t = fmt(g.elapsed); const el = $('#timeTxt'); if (el.textContent !== t) el.textContent = t;
     if ((saveTick += dt) > 4000) { saveTick = 0; saveGames(); }
@@ -716,9 +797,12 @@ function showStats() {
     <div class="k">Streak (best)</div><div class="val">${s.streak} <span class="k">(${s.bestStreak})</span></div></div>`; };
   openModal(`<h2>Stats${X}</h2><div class="stats">${card(1)}${card(2)}${card(3)}</div>
     <div class="help" style="margin-top:12px"><p style="color:var(--muted);font-size:13px">Solved / started. Starting a new puzzle over one in progress resets that tier's streak.</p></div>
+    <h3>Training</h3>
+    <table class="tstats">${TECHS.map(t => { const s = tstats[t] || { clean: 0, hinted: 0, revealed: 0 }; return `<tr><td>${t}</td><td>${s.clean} found · ${s.hinted} hinted · ${s.revealed} shown</td></tr>`; }).join('')}</table>
     <button class="btn danger" id="resetStats">Reset stats</button>`);
   $('#resetStats').onclick = () => confirmSheet('Reset all stats?', 'This clears solved counts, times and streaks for every tier.', 'Reset', () => {
     for (const t of [1, 2, 3]) stats[t] = { started: 0, solved: 0, best: 0, total: 0, streak: 0, bestStreak: 0 };
+    for (const k in tstats) delete tstats[k]; LS.set('fs.tstats', tstats);
     saveStats(); toast('Stats reset');
   });
 }
@@ -731,6 +815,7 @@ const SETTING_ROWS = [
   ['autoClean', 'Auto-clear notes', 'Placing a number removes it from notes in its row, column and box'],
   ['counts', 'Show remaining counts', 'How many of each number are left, under the pad'],
   ['showTimer', 'Show timer', 'Time is still tracked when hidden'],
+  ['coach', 'Coach in Medium and Hard', 'When no singles are left, offer to train on the pattern that\'s needed'],
   ['haptics', 'Haptic taps', 'Vibrate on input, where supported'],
 ];
 function showSettings() {
@@ -749,6 +834,7 @@ function showSettings() {
       <p><b>Notes</b> toggles pencil marks. <b>All notes</b> writes every candidate in one step (undoable).</p>
       <p><b>Low tedium:</b> every puzzle is checked by a solver so you always have at least 3 moves open. You never have to hunt for the one cell that works.</p>
       <p><b>Easy</b> needs only singles. <b>Medium</b> needs pointing pairs, box-line, naked or hidden pairs and triples. <b>Hard</b> needs X-Wing, XY-Wing, XYZ-Wing or Swordfish.</p>
+      <p><b>Train</b> serves drills: a board from a real puzzle where a technique is the next move, with all candidates filled in. Tap cells you think are part of the pattern and it tells you where to look next. Tap a number to highlight its candidates and see how many spots it has in each row and column.</p>
       <p>Keyboard: 1-9, Shift+digit for notes, arrows, Backspace, N notes, F smart fill, P pause, Ctrl+Z / Ctrl+Y.</p>
     </div>`);
   sheet.querySelectorAll('.switch').forEach(b => b.onclick = () => { const k = b.dataset.k; settings[k] = !settings[k]; b.classList.toggle('on', settings[k]); saveSettings(); render(); });
@@ -759,8 +845,373 @@ function showSettings() {
 $('#statsBtn').onclick = showStats;
 $('#settingsBtn').onclick = showSettings;
 
+// ---------- training: drills, coach, pattern hunt ----------
+const TECHS = ['Pointing', 'Box-line', 'Naked pair', 'Hidden pair', 'Naked triple', 'Hidden triple', 'X-Wing', 'XY-Wing', 'XYZ-Wing', 'Swordfish'];
+const DIGIT_TECH = { 'Pointing': 1, 'Box-line': 1, 'X-Wing': 1, 'Swordfish': 1 };
+const drills = Object.assign({}, LS.get('fs.drills', {}));
+const tstats = Object.assign({}, LS.get('fs.tstats', {}));
+let trainTech = LS.get('fs.trainTech', 'Mix');
+let hunt = null, focusD = 0, waitDrill = false, harvesting = false, coachReady = false, trainVisited = LS.get('fs.trainVisited', false);
+const saveDrills = () => LS.set('fs.drills', drills);
+const huntEl = document.getElementById('huntOv');
+
+const cellName = i => `r${ROW[i] + 1}c${COL[i] + 1}`;
+const unitName = u => u < 9 ? `row ${u + 1}` : u < 18 ? `column ${u - 8}` : `box ${u - 17}`;
+const digitsOf = m => { const a = []; for (let d = 1; d <= 9; d++) if (m & (1 << (d - 1))) a.push(d); return a; };
+const andList = a => a.length < 2 ? String(a[0]) : a.slice(0, -1).join(', ') + ' and ' + a[a.length - 1];
+const orList = a => a.length < 2 ? String(a[0]) : a.slice(0, -1).join(', ') + ' or ' + a[a.length - 1];
+const unitsOf = i => [ROW[i], 9 + COL[i], 18 + BOX[i]];
+const NUMW = ['zero', 'one', 'two', 'three', 'four'];
+const nw = n => NUMW[n] || String(n);
+const article = t => /^[AEIOUX]/.test(t) ? 'an' : 'a';
+
+function stFrom(g) {
+  return { vals: Int8Array.from(g.vals), cands: Uint16Array.from(g.notes.map((n, i) => g.vals[i] ? 0 : n)) };
+}
+function allInstances(st, onlyTech) {
+  const list = [];
+  for (const t of onlyTech ? [onlyTech] : TECHS) list.push(...enumerateTech(st, t));
+  return list;
+}
+const TIPS = {
+  'Pointing': 'Pick a number and check each box: are all of its spots in one row or column?',
+  'Box-line': 'Pick a number and check each row and column: are all of its spots inside one box?',
+  'Naked pair': 'Look for two cells in the same row, column or box with the same two candidates.',
+  'Naked triple': 'Look for three cells in one row, column or box whose candidates together are only three numbers.',
+  'Hidden pair': 'In one row, column or box, look for two numbers that each fit in only the same two cells.',
+  'Hidden triple': 'In one row, column or box, look for three numbers that only fit in the same three cells.',
+  'X-Wing': 'Tap a number below to see its spots and the line counts. Look for two rows (or two columns) showing 2, with the spots in the same two columns (or rows).',
+  'Swordfish': 'Tap a number below to see line counts. Look for three rows (or columns) with 2 or 3 spots each, all inside the same three columns (or rows).',
+  'XY-Wing': 'Find a two-candidate cell (the pivot) that sees two other two-candidate cells: one sharing each of its numbers, and both sharing a third number.',
+  'XYZ-Wing': 'Find a three-candidate cell (the pivot) that sees two two-candidate cells built only from its numbers, with one number in common.'
+};
+function fishNames(inst) {
+  const line = inst.orient ? 'column' : 'row', cover = inst.orient ? 'row' : 'column';
+  const base = inst.base.map(l => l + 1), cov = digitsOf(inst.coverMask);
+  return { line, cover, base, cov, lines: `${line}s ${andList(base)}`, covers: `${cover}s ${andList(cov)}` };
+}
+function wingParts(inst, cands) {
+  const [p, q, r] = inst.cells, z = 1 << (inst.digit - 1);
+  return { p, q, r, z: inst.digit, pd: digitsOf(cands[p]), qd: digitsOf(cands[q]), rd: digitsOf(cands[r]), qs: digitsOf(cands[q] & cands[p] & ~z), rs: digitsOf(cands[r] & cands[p] & ~z) };
+}
+function explain(inst, cands) {
+  const t = inst.tech, d = inst.digit;
+  if (t === 'Pointing') { const ln = unitName(inst.line); return `Pointing: in box ${inst.box + 1}, every ${d} candidate sits in ${ln}. The box's ${d} has to be in ${ln}, so no other cell in ${ln} can be ${d}.`; }
+  if (t === 'Box-line') { const ln = unitName(inst.line); return `Box-line: in ${ln}, every ${d} candidate sits inside box ${inst.box + 1}. The ${d} for ${ln} has to be in this box, so the box's other cells can't be ${d}.`; }
+  if (t === 'Naked pair' || t === 'Naked triple') { const ds = digitsOf(inst.digits), u = unitName(inst.unit); return `${t}: these ${inst.cells.length} cells in ${u} can only hold ${orList(ds)} between them. Those numbers get used up here, so remove ${andList(ds)} from the rest of ${u}.`; }
+  if (t === 'Hidden pair' || t === 'Hidden triple') { const ds = digitsOf(inst.digits), u = unitName(inst.unit); return `${t}: in ${u}, ${andList(ds)} can only go in these ${inst.cells.length} cells. So these cells must hold ${andList(ds)}, and their other candidates can go.`; }
+  if (t === 'X-Wing' || t === 'Swordfish') {
+    const f = fishNames(inst), n = inst.base.length;
+    return `${t} on ${d}: in ${f.lines}, ${d} can only go in ${f.covers}. Each of those ${nw(n)} ${f.line}s needs its own ${d}, so they fill the ${d} for all ${nw(n)} ${f.cover}s between them. Remove ${d} from the rest of ${f.covers}.`;
+  }
+  if (t === 'XY-Wing') {
+    const w = wingParts(inst, cands);
+    return `XY-Wing: the pivot ${cellName(w.p)} is ${w.pd.join(' or ')}. If it's ${w.qs[0]}, ${cellName(w.q)} must be ${w.z}. If it's ${w.rs[0]}, ${cellName(w.r)} must be ${w.z}. Either way one wing is ${w.z}, so a cell that sees both wings can't be ${w.z}.`;
+  }
+  if (t === 'XYZ-Wing') {
+    const w = wingParts(inst, cands);
+    return `XYZ-Wing: the pivot ${cellName(w.p)} is ${orList(w.pd)}, and the wings are ${w.qd.join('/')} and ${w.rd.join('/')}. Whatever the pivot is, one of the three cells ends up ${w.z}. So a cell that sees all three can't be ${w.z}.`;
+  }
+  return t;
+}
+// Where to look next, given what has been found so far
+function guide(inst, found, tapped, cands) {
+  const t = inst.tech, d = inst.digit, rest = inst.cells.filter(c => !found.has(c));
+  if (t === 'Pointing') return { msg: `Yes, this ${d} is part of ${article(t)} ${t} pattern. Look at box ${inst.box + 1}: where else can ${d} go?`, regions: [18 + inst.box] };
+  if (t === 'Box-line') return { msg: `Yes, this ${d} is part of a Box-line pattern. Look along ${unitName(inst.line)}: where else can ${d} go?`, regions: [inst.line] };
+  if (t === 'Naked pair') { const ds = digitsOf(cands[tapped]); return { msg: `Yes. This cell can only be ${ds.join(' or ')}. Look in ${unitName(inst.unit)} for another cell with exactly these two candidates.`, regions: [inst.unit] }; }
+  if (t === 'Naked triple') return { msg: `Yes, this cell is part of a Naked triple in ${unitName(inst.unit)}: three cells that between them hold only three numbers. Find the other ${rest.length} in ${unitName(inst.unit)}.`, regions: [inst.unit] };
+  if (t === 'Hidden pair' || t === 'Hidden triple') { const k = inst.cells.length; return { msg: `Yes. In ${unitName(inst.unit)}, ${nw(k)} numbers only fit in the same ${nw(k)} cells, and this is one of them. Look in ${unitName(inst.unit)} for numbers that appear in just ${nw(k)} places.`, regions: [inst.unit] }; }
+  if (t === 'X-Wing' || t === 'Swordfish') {
+    const f = fishNames(inst), baseOf = c => inst.orient ? COL[c] : ROW[c], lineU = l => inst.orient ? 9 + l : l, coverU = l => inst.orient ? l : 9 + l;
+    const L = baseOf(tapped), inLine = inst.cells.filter(c => baseOf(c) === L), restL = inLine.filter(c => !found.has(c));
+    if (restL.length) return { msg: `Yes. ${d} only fits ${inLine.length === 2 ? 'twice' : nw(inLine.length) + ' times'} in ${f.line} ${L + 1}. Find the other ${d}${restL.length > 1 ? 's' : ''} in ${f.line} ${L + 1}.`, regions: [lineU(L)] };
+    const started = new Set([...found].map(baseOf));
+    const cov = digitsOf(inst.coverMask);
+    if (started.size < inst.base.length) {
+      return { msg: `${f.line[0].toUpperCase() + f.line.slice(1)} ${L + 1} has ${d} only in ${f.cover}s ${andList(inLine.map(c => (inst.orient ? ROW[c] : COL[c]) + 1))}. Now find another ${f.line} where ${d} sits only inside ${t === 'X-Wing' ? 'those same two ' + f.cover + 's' : f.covers}.`, regions: cov.map(x => coverU(x - 1)) };
+    }
+    const m = rest[0];
+    return { msg: `Almost there. One more ${d}: look in ${f.line} ${baseOf(m) + 1}.`, regions: [lineU(baseOf(m))] };
+  }
+  if (t === 'XY-Wing' || t === 'XYZ-Wing') {
+    const w = wingParts(inst, cands), fp = found.has(w.p), fq = found.has(w.q), fr = found.has(w.r);
+    const pivotDesc = t === 'XY-Wing' ? 'two candidates' : 'three candidates';
+    if (tapped === w.p && !fq && !fr) return { msg: `Yes, this is the pivot (${w.pd.join(', ')}). Find two cells it can see, in its row, column or box, each with two candidates: one sharing ${w.qs[0]}, one sharing ${w.rs[0]}, and both sharing a third number.`, regions: unitsOf(w.p) };
+    if (!fp) return { msg: `Yes, this cell (${digitsOf(cands[tapped]).join(', ')}) is a wing. The pivot is a cell with ${pivotDesc} that this cell can see. Look in its row, column and box.`, regions: unitsOf(tapped) };
+    const miss = !fq ? w.q : w.r;
+    return { msg: `Now the other wing: a cell the pivot sees with ${digitsOf(cands[miss]).join(' and ')}.`, regions: unitsOf(w.p) };
+  }
+  return { msg: '', regions: [] };
+}
+function introMsg(h) {
+  if (h.src === 'coach') return `No singles left. I've filled in all candidates (your own eliminations kept). Find the pattern that opens it up: tap a cell that's part of it, or use Show me.`;
+  if (!h.techKnown) return `Find the next move. There are no singles here, so it takes a pattern. Tap a cell that's part of it, or use Show me.`;
+  return `Find the ${h.tech}. Tap any cell that's part of it. Show me gives hints, step by step.`;
+}
+function makeHunt(src, tech, techKnown) {
+  const g = G(); if (!g) return null;
+  const st = stFrom(g);
+  let insts = allInstances(st, src === 'drill' && techKnown ? tech : null);
+  if (!insts.length) return null;
+  insts.sort((a, b) => (a.tech === tech ? 0 : 1) - (b.tech === tech ? 0 : 1));
+  const h = { src, tech: tech || insts[0].tech, techKnown, insts, found: new Set(), stage: 0, done: false, revealed: false, applied: false, regions: [], cur: null, solvedInst: null, msg: '', title: '' };
+  h.msg = introMsg(h);
+  return h;
+}
+function consistent(h) { return h.insts.filter(inst => [...h.found].every(c => inst.cells.includes(c))); }
+function huntSuccess(inst, revealed) {
+  const g = G(), h = hunt;
+  h.done = true; h.revealed = revealed; h.solvedInst = inst; h.cur = inst; h.found = new Set(inst.cells); h.techKnown = true;
+  h.regions = [];
+  if (inst.digit && DIGIT_TECH[inst.tech]) focusD = inst.digit;
+  const n = inst.elims.reduce((s, [, m]) => s + digitsOf(m).length, 0);
+  h.msg = explain(inst, stFrom(g).cands) + ` Tap Apply to remove the ${n} crossed-out candidate${n > 1 ? 's' : ''}.`;
+  const s = tstats[inst.tech] = Object.assign({ clean: 0, hinted: 0, revealed: 0 }, tstats[inst.tech]);
+  if (revealed) s.revealed++; else if (h.stage > 0) s.hinted++; else s.clean++;
+  LS.set('fs.tstats', tstats);
+  if (!revealed) buzz([20, 40, 20]);
+}
+function huntTap(i) {
+  const g = G(), h = hunt; if (!g || !h) return;
+  if (h.done) { if (h.applied) toast(h.src === 'drill' ? 'Tap Next for another drill' : 'Back to the puzzle'); return; }
+  if (g.vals[i]) { h.msg = `That cell is already solved. Patterns live in the notes: tap a cell with candidates.`; render(); return; }
+  if (h.found.has(i)) { h.found.delete(i); h.msg = h.found.size ? 'Unmarked. Keep going, or tap it again to re-mark.' : introMsg(h); h.regions = []; render(); return; }
+  const cands = stFrom(g).cands;
+  let C = consistent(h).filter(inst => inst.cells.includes(i));
+  if (!C.length && h.insts.some(inst => inst.cells.includes(i))) { h.found = new Set(); C = h.insts.filter(inst => inst.cells.includes(i)); }
+  if (C.length) {
+    h.found.add(i);
+    C.sort((a, b) => b.cells.filter(c => h.found.has(c)).length - a.cells.filter(c => h.found.has(c)).length);
+    const inst = C[0]; h.cur = inst;
+    if (!h.techKnown) h.techKnown = true;
+    if (inst.digit && DIGIT_TECH[inst.tech]) focusD = inst.digit;
+    if (inst.cells.every(c => h.found.has(c))) { huntSuccess(inst, false); render(); return; }
+    const gd = guide(inst, h.found, i, cands);
+    h.msg = gd.msg; h.regions = gd.regions; buzz();
+    render(); return;
+  }
+  const elimHit = consistent(h).find(inst => inst.elims.some(([c]) => c === i));
+  if (elimHit) {
+    h.msg = `Close: this cell gets affected by the pattern (a candidate here will be removed), but it isn't part of it. Look at the cells that cause the removal.`;
+  } else {
+    const tip = h.techKnown ? ' ' + TIPS[h.cur ? h.cur.tech : h.tech] : '';
+    h.msg = `Not part of the pattern.${tip}`;
+    warn([i]);
+  }
+  render();
+}
+function huntHint() {
+  const g = G(), h = hunt; if (!g || !h || h.done) return;
+  const C = consistent(h); const inst = h.cur && C.includes(h.cur) ? h.cur : (C.find(x => x.tech === h.tech) || C[0] || h.insts[0]);
+  if (!C.length) h.found = new Set();
+  h.cur = inst; h.stage++;
+  const cands = stFrom(g).cands, t = inst.tech;
+  if (h.stage === 1) {
+    h.techKnown = true;
+    let where = '';
+    if (inst.digit && DIGIT_TECH[t]) { focusD = inst.digit; where = ` on ${inst.digit}`; }
+    else if (inst.unit !== undefined) where = ` in ${unitName(inst.unit)}`;
+    h.msg = `It's ${article(t)} ${t}${where}. ${TIPS[t]}`;
+    h.regions = [];
+  } else if (h.stage === 2) {
+    let first = inst.cells[0], regions = [];
+    if (t === 'Pointing') regions = [18 + inst.box];
+    else if (t === 'Box-line') regions = [inst.line];
+    else if (inst.unit !== undefined) regions = [inst.unit];
+    else if (t === 'X-Wing' || t === 'Swordfish') regions = inst.base.map(l => inst.orient ? 9 + l : l);
+    else regions = unitsOf(inst.cells[0]);
+    if (!h.found.size) h.found.add(first);
+    const gd = guide(inst, h.found, [...h.found][0], cands);
+    const gm = gd.msg.replace(/^Yes[.,] /, ''); h.msg = `I've marked one piece. ${gm[0].toUpperCase() + gm.slice(1)}`; h.regions = regions;
+  } else {
+    huntSuccess(inst, true);
+  }
+  buzz(); render();
+}
+function huntApply() {
+  const g = G(), h = hunt; if (!g || !h || !h.done || h.applied) return;
+  const inst = h.solvedInst, ch = [];
+  const notes = g.notes.slice();
+  for (const [c, m] of inst.elims) notes[c] &= ~m;
+  for (let i = 0; i < 81; i++) if (notes[i] !== g.notes[i]) ch.push([i, 0, g.notes[i], 0, notes[i]]);
+  let removed = 0; for (const [, m] of inst.elims) removed += digitsOf(m).length;
+  if (h.src === 'coach') {
+    commit(ch);
+    const st = stFrom(g), out = new Int8Array(81), n = findSingles(st, out);
+    const opened = [...out.keys()].filter(i => out[i]);
+    hunt = null; focusD = 0;
+    toast(n ? `Removed ${removed}. ${n} cell${n > 1 ? 's' : ''} opened up` : `Removed ${removed}. Keep looking`);
+    opened.forEach((c, k) => { const el = cells[c].el; el.classList.remove('flash'); void el.offsetWidth; el.style.animationDelay = (k * 60) + 'ms'; el.classList.add('flash'); });
+    saveGames(); afterChange(); return;
+  }
+  g.notes = notes; h.applied = true;
+  const st = stFrom(g), out = new Int8Array(81), n = findSingles(st, out);
+  const opened = [...out.keys()].filter(i => out[i]);
+  h.msg = n ? `Removed ${removed} candidate${removed > 1 ? 's' : ''}. That opens up ${opened.slice(0, 3).map(c => `${cellName(c)} = ${out[c]}`).join(', ')}${n > 3 ? ` and ${n - 3} more` : ''}. Tap Next for another drill.` : `Removed ${removed} candidate${removed > 1 ? 's' : ''}. Tap Next for another drill.`;
+  opened.forEach((c, k) => { const el = cells[c].el; el.classList.remove('flash'); void el.offsetWidth; el.style.animationDelay = (k * 60) + 'ms'; el.classList.add('flash'); });
+  saveGames(); render();
+}
+// ----- drills -----
+function pickDrillTech() {
+  if (trainTech !== 'Mix') return trainTech;
+  const avail = TECHS.filter(t => drills[t] && drills[t].length);
+  if (!avail.length) return null;
+  return avail[(Math.random() * avail.length) | 0];
+}
+function startDrill() {
+  const t = pickDrillTech();
+  const pool = t && drills[t];
+  if (!pool || !pool.length) { games[4] = null; hunt = null; waitDrill = true; harvest(); render(); return; }
+  const snap = pool.shift(); saveDrills();
+  waitDrill = false;
+  games[4] = { tier: 4, puzzle: snap.vals.slice(), solution: snap.vals.slice(), vals: snap.vals.slice(), notes: snap.cands.slice(), elapsed: 0, solved: false,
+    techs: {}, clues: snap.vals.filter(v => v).length, undo: [], redo: [], id: Date.now(), drillTech: snap.tech, drillKnown: trainTech !== 'Mix' };
+  saveGames(); focusD = 0; clearFx();
+  hunt = makeHunt('drill', snap.tech, trainTech !== 'Mix');
+  if (!hunt) { games[4] = null; startDrill(); return; }
+  harvest(); render();
+}
+function poolsLow() { return TECHS.some(t => !drills[t] || drills[t].length < 3); }
+function harvest() {
+  if (harvesting || !worker) return;
+  if (!waitDrill && !(tier === 4 && poolsLow())) return;
+  harvesting = true; worker.postMessage({ type: 'harvest', ms: 1500 });
+}
+function onHarvest(list) {
+  harvesting = false;
+  for (const s of list) { const p = drills[s.tech] = drills[s.tech] || []; if (p.length < 6) p.push(s); }
+  saveDrills();
+  if (waitDrill && tier === 4) { const t = pickDrillTech(); if (t && drills[t] && drills[t].length) { startDrill(); return; } }
+  harvest(); render();
+}
+function syncHunt() {
+  if (tier === 4) {
+    if (!games[4]) { if (!waitDrill) startDrill(); return; }
+    if (!hunt || hunt.src !== 'drill') { hunt = makeHunt('drill', games[4].drillTech, games[4].drillKnown); if (!hunt) startDrill(); }
+  } else if (hunt && (hunt.src === 'drill' || hunt.game !== G())) { hunt = null; focusD = 0; }
+}
+// ----- coach (Medium/Hard) -----
+function coachState(g) {
+  if (!g || g.tier < 2 || g.tier > 3 || g.solved || !settings.coach) return null;
+  for (let i = 0; i < 81; i++) if (g.vals[i] && g.vals[i] !== g.solution[i]) return null;
+  const st = makeState(g.vals);
+  for (let i = 0; i < 81; i++) if (!g.vals[i] && g.notes[i] && (g.notes[i] & (1 << (g.solution[i] - 1)))) st.cands[i] &= g.notes[i];
+  const out = new Int8Array(81);
+  if (findSingles(st, out)) return null;
+  const fs = firstStep(st, 3);
+  return fs ? { st, tech: fs[0].tech } : null;
+}
+function updateCoach() { coachReady = !hunt && !!coachState(G()); }
+function startCoach() {
+  const g = G(), cs = coachState(g); if (!cs) { coachReady = false; render(); return; }
+  const ch = [];
+  for (let i = 0; i < 81; i++) if (!g.vals[i] && cs.st.cands[i] !== g.notes[i]) ch.push([i, 0, g.notes[i], 0, cs.st.cands[i]]);
+  commit(ch);
+  sel = -1; lockMode = false; notesMode = false; focusD = 0;
+  hunt = makeHunt('coach', cs.tech, false); if (hunt) hunt.game = g;
+  coachReady = false; render();
+}
+function exitHunt() { if (!hunt) return; if (hunt.src === 'drill') { startDrill(); return; } hunt = null; focusD = 0; updateCoach(); render(); }
+// ----- drawing -----
+function notePos(i, d) { return [COL[i] * 10 + (((d - 1) % 3) + 0.5) * 10 / 3, ROW[i] * 10 + ((((d - 1) / 3) | 0) + 0.5) * 10 / 3]; }
+function drawHunt(g) {
+  if (!hunt || !g) { huntEl.innerHTML = ''; return; }
+  const h = hunt, f = n => +n.toFixed(2), cands = stFrom(g).cands;
+  let s = '';
+  for (const u of h.regions) {
+    let x, y, w, hh;
+    if (u < 9) { x = 0; y = u * 10; w = 90; hh = 10; } else if (u < 18) { x = (u - 9) * 10; y = 0; w = 10; hh = 90; } else { const b = u - 18; x = (b % 3) * 30; y = ((b / 3) | 0) * 30; w = hh = 30; }
+    s += `<rect class="rg" x="${x + .3}" y="${y + .3}" width="${w - .6}" height="${hh - .6}" rx="1.2"/>`;
+  }
+  const inst = h.cur, shown = [...h.found];
+  if (inst && h.done) {
+    if (inst.tech === 'X-Wing' || inst.tech === 'Swordfish') {
+      const cs = inst.cells;
+      for (let a = 0; a < cs.length; a++) for (let b = a + 1; b < cs.length; b++) {
+        const A = cs[a], B = cs[b];
+        if (ROW[A] === ROW[B] || COL[A] === COL[B]) { const [x1, y1] = notePos(A, inst.digit), [x2, y2] = notePos(B, inst.digit); s += `<line class="ln" x1="${f(x1)}" y1="${f(y1)}" x2="${f(x2)}" y2="${f(y2)}"/>`; }
+      }
+    } else if (inst.tech === 'XY-Wing' || inst.tech === 'XYZ-Wing') {
+      const [p, ...ws] = inst.cells;
+      for (const w of ws) s += `<line class="ln" x1="${COL[p] * 10 + 5}" y1="${ROW[p] * 10 + 5}" x2="${COL[w] * 10 + 5}" y2="${ROW[w] * 10 + 5}"/>`;
+    }
+  }
+  for (const c of shown) {
+    const t = inst ? inst.tech : '';
+    if (inst && inst.digit && DIGIT_TECH[t]) { const [x, y] = notePos(c, inst.digit); s += `<circle class="pc" cx="${f(x)}" cy="${f(y)}" r="1.55"/>`; }
+    else if (inst && (t === 'Hidden pair' || t === 'Hidden triple')) {
+      s += `<rect class="pcell" x="${COL[c] * 10 + .7}" y="${ROW[c] * 10 + .7}" width="8.6" height="8.6" rx="1.6"/>`;
+      if (h.done) for (const d of digitsOf(inst.digits & cands[c])) { const [x, y] = notePos(c, d); s += `<circle class="pc" cx="${f(x)}" cy="${f(y)}" r="1.55"/>`; }
+    } else {
+      const piv = inst && (t === 'XY-Wing' || t === 'XYZ-Wing') && c === inst.cells[0];
+      s += `<rect class="pcell${piv ? ' piv' : ''}" x="${COL[c] * 10 + .7}" y="${ROW[c] * 10 + .7}" width="8.6" height="8.6" rx="1.6"/>`;
+    }
+  }
+  if (inst && h.done && !h.applied) for (const [c, m] of inst.elims) for (const d of digitsOf(m)) {
+    const [x, y] = notePos(c, d), r = 1.25;
+    s += `<path class="ex" d="M${f(x - r)} ${f(y - r)}L${f(x + r)} ${f(y + r)}M${f(x + r)} ${f(y - r)}L${f(x - r)} ${f(y + r)}"/>`;
+  }
+  huntEl.innerHTML = `<svg viewBox="0 0 90 90" preserveAspectRatio="none" aria-hidden="true">${s}</svg>`;
+}
+const colCounts = document.getElementById('colCounts'), rowCounts = document.getElementById('rowCounts');
+for (let k = 0; k < 9; k++) { colCounts.appendChild(document.createElement('span')); rowCounts.appendChild(document.createElement('span')); }
+function drawCounts(g) {
+  const on = !!(hunt && g && focusD && settings.tcounts);
+  colCounts.classList.toggle('show', on); rowCounts.classList.toggle('show', on);
+  if (!on) return;
+  const bit = 1 << (focusD - 1);
+  for (let k = 0; k < 9; k++) {
+    let rc = 0, cc = 0, rp = false, cp = false;
+    for (let j = 0; j < 9; j++) {
+      const a = k * 9 + j, b = j * 9 + k;
+      if (g.vals[a] === focusD) rp = true; else if (!g.vals[a] && (g.notes[a] & bit)) rc++;
+      if (g.vals[b] === focusD) cp = true; else if (!g.vals[b] && (g.notes[b] & bit)) cc++;
+    }
+    const set = (el, n, placed) => { el.textContent = placed ? '✓' : n || ''; el.className = placed ? 'kp' : n === 2 ? 'k2' : n === 3 ? 'k3' : ''; };
+    set(rowCounts.children[k], rc, rp); set(colCounts.children[k], cc, cp);
+  }
+}
+function renderTrainUI(g) {
+  document.body.classList.toggle('hunt', !!hunt || tier === 4);
+  document.body.classList.toggle('train', tier === 4);
+  const card = $('#coachCard');
+  if (hunt) {
+    const h = hunt;
+    const title = h.src === 'coach' ? 'Coach' : (h.techKnown ? (h.done ? h.solvedInst.tech : h.tech) : 'Mystery pattern');
+    const st = h.techKnown && tstats[h.done ? h.solvedInst.tech : h.tech];
+    $('#coachTitle').innerHTML = `<span>${title}${h.done ? (h.revealed ? ' · revealed' : ' · found!') : ''}</span><span class="cs">${st ? `${st.clean} found · ${st.hinted} hinted · ${st.revealed} shown` : ''}</span>`;
+    $('#coachMsg').textContent = h.msg;
+    card.classList.toggle('ok', h.done && !h.revealed);
+  } else if (tier === 4) {
+    $('#coachTitle').innerHTML = '<span>Training</span>';
+    $('#coachMsg').textContent = waitDrill ? `Searching generated puzzles for ${trainTech === 'Mix' ? 'drills' : article(trainTech) + ' ' + trainTech}. Rare ones like Swordfish can take a few seconds.` : '';
+  }
+  $('#hintBtn').disabled = !hunt || hunt.done;
+  $('#hintLbl').textContent = !hunt || hunt.done ? 'Show me' : hunt.stage === 0 ? 'Show me' : hunt.stage === 1 ? 'Show more' : 'Reveal';
+  $('#applyBtn').disabled = !hunt || !hunt.done || hunt.applied;
+  $('#applyBtn').classList.toggle('ready', !!(hunt && hunt.done && !hunt.applied));
+  $('#countsBtn').classList.toggle('on', !!settings.tcounts);
+  $('#exitLbl').textContent = tier === 4 ? 'Next' : 'Exit';
+  $('#newBtn').textContent = tier === 4 ? 'Next' : 'New';
+  document.querySelectorAll('#techChips button').forEach(b => b.classList.toggle('on', b.dataset.t === trainTech));
+  const hl = $('#hintLine');
+  if (!hunt && coachReady && tier !== 4) hl.innerHTML = `<button class="coach-cta" id="coachCta">Hard moment: no singles left · Train on it</button>`;
+  drawHunt(g); drawCounts(g);
+}
+{ const chips = $('#techChips');
+  chips.innerHTML = ['Mix', ...TECHS].map(t => `<button class="tchip" data-t="${t}">${t}</button>`).join('');
+  chips.addEventListener('click', e => { const b = e.target.closest('button'); if (!b) return; trainTech = b.dataset.t; LS.set('fs.trainTech', trainTech); b.scrollIntoView({ inline: 'center', block: 'nearest', behavior: 'smooth' }); startDrill(); });
+}
+$('#hintBtn').onclick = huntHint;
+$('#applyBtn').onclick = huntApply;
+$('#countsBtn').onclick = () => { settings.tcounts = !settings.tcounts; saveSettings(); if (!focusD) toast('Tap a number below to see its line counts'); render(); };
+$('#exitBtn').onclick = exitHunt;
+$('#hintLine').addEventListener('click', e => { if (e.target.closest('#coachCta')) startCoach(); });
+
 // ---------- boot ----------
 ensureGame(tier);
+syncHunt();
 pump();
 render();
 })();

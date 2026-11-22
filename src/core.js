@@ -78,8 +78,8 @@ function pointing(st, acc) {
       const bit = 1 << d; let rs = -1, cs = -1, cnt = 0, rowOk = true, colOk = true; const cells = [];
       for (const c of U) if (cands[c] & bit) { cells.push(c); if (rs < 0) { rs = ROW[c]; cs = COL[c]; } else { if (ROW[c] !== rs) rowOk = false; if (COL[c] !== cs) colOk = false; } cnt++; }
       if (cnt < 2) continue;
-      if (rowOk) { const el = []; for (const c of UNITS[rs]) if (BOX[c] !== b && (cands[c] & bit)) el.push([c, bit]); if (el.length) { acc.push({ tech: 'Pointing', elims: el, cells, digit: d + 1 }); if (acc.length >= acc.limit) return true; } }
-      if (colOk) { const el = []; for (const c of UNITS[9 + cs]) if (BOX[c] !== b && (cands[c] & bit)) el.push([c, bit]); if (el.length) { acc.push({ tech: 'Pointing', elims: el, cells, digit: d + 1 }); if (acc.length >= acc.limit) return true; } }
+      if (rowOk) { const el = []; for (const c of UNITS[rs]) if (BOX[c] !== b && (cands[c] & bit)) el.push([c, bit]); if (el.length) { acc.push({ tech: 'Pointing', elims: el, cells, digit: d + 1, box: b, line: rs }); if (acc.length >= acc.limit) return true; } }
+      if (colOk) { const el = []; for (const c of UNITS[9 + cs]) if (BOX[c] !== b && (cands[c] & bit)) el.push([c, bit]); if (el.length) { acc.push({ tech: 'Pointing', elims: el, cells, digit: d + 1, box: b, line: 9 + cs }); if (acc.length >= acc.limit) return true; } }
     }
   }
   return null;
@@ -93,7 +93,7 @@ function claiming(st, acc) {
       for (const c of U) if (cands[c] & bit) { cells.push(c); if (bx < 0) bx = BOX[c]; else if (BOX[c] !== bx) { ok = false; break; } }
       if (!ok || cells.length < 2) continue;
       const el = []; for (const c of UNITS[18 + bx]) if (!U.includes(c) && (cands[c] & bit)) el.push([c, bit]);
-      if (el.length) { acc.push({ tech: 'Box-line', elims: el, cells, digit: d + 1 }); if (acc.length >= acc.limit) return true; }
+      if (el.length) { acc.push({ tech: 'Box-line', elims: el, cells, digit: d + 1, line: u, box: bx }); if (acc.length >= acc.limit) return true; }
     }
   }
   return null;
@@ -107,7 +107,7 @@ function nakedSubset(st, k, acc) {
       let un = 0; for (const c of cb) un |= cands[c];
       if (POP[un] !== k) continue;
       const el = []; for (const c of U) if (!cb.includes(c) && (cands[c] & un)) el.push([c, cands[c] & un]);
-      if (el.length) { acc.push({ tech: k === 2 ? 'Naked pair' : 'Naked triple', elims: el, cells: cb }); if (acc.length >= acc.limit) return true; }
+      if (el.length) { acc.push({ tech: k === 2 ? 'Naked pair' : 'Naked triple', elims: el, cells: cb, unit: u, digits: un }); if (acc.length >= acc.limit) return true; }
     }
   }
   return null;
@@ -123,7 +123,7 @@ function hiddenSubset(st, k, acc) {
       if (POP[pm] !== k) continue;
       const el = [], cells = [];
       for (let j = 0; j < 9; j++) if (pm & (1 << j)) { const c = U[j]; cells.push(c); if (cands[c] & ~dm) el.push([c, cands[c] & ~dm]); }
-      if (el.length) { acc.push({ tech: k === 2 ? 'Hidden pair' : 'Hidden triple', elims: el, cells }); if (acc.length >= acc.limit) return true; }
+      if (el.length) { acc.push({ tech: k === 2 ? 'Hidden pair' : 'Hidden triple', elims: el, cells, unit: u, digits: dm }); if (acc.length >= acc.limit) return true; }
     }
   }
   return null;
@@ -148,7 +148,7 @@ function fish(st, k, acc) {
           if (!(cands[c] & bit)) continue;
           if (cb.includes(l)) cells.push(c); else el.push([c, bit]);
         }
-        if (el.length) { acc.push({ tech: name, elims: el, cells, digit: d + 1 }); if (acc.length >= acc.limit) return true; }
+        if (el.length) { acc.push({ tech: name, elims: el, cells, digit: d + 1, orient, base: cb.slice(), coverMask: un }); if (acc.length >= acc.limit) return true; }
       }
     }
   }
@@ -259,4 +259,43 @@ function generate(tier, K, needSingle) {
   return { puzzle: Array.from(puz), solution: Array.from(sol), tier, techs: fin.techs, clues, minOpen: fin.minOpen, avgOpen: fin.avgOpen };
 }
 
-if (typeof module !== 'undefined') module.exports = { generate, solve, makeState, findSingles, TIER2, TIER3, applyElims, place, UNITS, PEERS, ROW, COL, BOX };
+const TECH_FN = {
+  'Pointing': pointing, 'Box-line': claiming,
+  'Naked pair': (st, a) => nakedSubset(st, 2, a), 'Hidden pair': (st, a) => hiddenSubset(st, 2, a),
+  'Naked triple': (st, a) => nakedSubset(st, 3, a), 'Hidden triple': (st, a) => hiddenSubset(st, 3, a),
+  'X-Wing': (st, a) => fish(st, 2, a), 'XY-Wing': xyWing, 'XYZ-Wing': xyzWing, 'Swordfish': (st, a) => fish(st, 3, a)
+};
+const TECH_TIER = { 'Pointing': 2, 'Box-line': 2, 'Naked pair': 2, 'Hidden pair': 2, 'Naked triple': 2, 'Hidden triple': 2, 'X-Wing': 3, 'XY-Wing': 3, 'XYZ-Wing': 3, 'Swordfish': 3 };
+// All distinct productive instances of one technique in a state
+function enumerateTech(st, name) {
+  const a = mkAcc(300); TECH_FN[name](st, a);
+  const seen = new Set(), out = [];
+  for (const s of a) {
+    if (s.tech !== name) continue;
+    const key = s.cells.slice().sort((x, y) => x - y).join(',') + '|' + (s.digit || s.digits || 0);
+    if (seen.has(key)) continue; seen.add(key); out.push(s);
+  }
+  return out;
+}
+// Dig random puzzles and record the board right before each advanced step
+function harvest(maxMs) {
+  const out = [], t0 = Date.now();
+  while (Date.now() - t0 < maxMs) {
+    const sol = randomSolution(), puz = Int8Array.from(sol);
+    for (const i of shuffle([...Array(41).keys()])) {
+      const j = 80 - i, a = puz[i], b = puz[j]; puz[i] = 0; puz[j] = 0;
+      if (!solve(puz, { maxTier: 3 }).solved) { puz[i] = a; puz[j] = b; }
+    }
+    const st = makeState(puz), sing = new Int8Array(81);
+    let E = 0; for (let i = 0; i < 81; i++) if (!st.vals[i]) E++;
+    while (E > 0) {
+      sing.fill(0);
+      if (findSingles(st, sing)) { let i = 0; while (!sing[i]) i++; place(st, i, sing[i]); E--; continue; }
+      const fs = firstStep(st, 3); if (!fs) break;
+      out.push({ tech: fs[0].tech, vals: Array.from(st.vals), cands: Array.from(st.cands) });
+      applyElims(st, fs[0]);
+    }
+  }
+  return out;
+}
+if (typeof module !== 'undefined') module.exports = { harvest, enumerateTech, TECH_FN, generate, solve, makeState, findSingles, TIER2, TIER3, applyElims, place, UNITS, PEERS, ROW, COL, BOX };
