@@ -207,6 +207,39 @@ body.hunt .coach{display:block}
 #toast.show{opacity:1;transform:translate(-50%,0)}
 .board-wrap.won #board .cell{animation:wave .6s ease-out both}
 @keyframes wave{0%{background:var(--flash)}100%{}}
+/* juice: feel only, no behaviour */
+button:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.cell.tick{animation:tick .55s ease-out}
+@keyframes tick{0%{background:var(--accent-soft)}100%{}}
+.coach{transition:box-shadow .3s}
+.pad button.gotit{opacity:1}
+@media (prefers-reduced-motion:no-preference){
+  .pad button{transition:transform .3s cubic-bezier(.3,1.6,.5,1),background-color .15s,opacity .35s}
+  .pad button:active{transform:scale(.92);transition-duration:.06s,.15s,.35s}
+  .tool,.icon-btn,.new-btn{transition:transform .3s cubic-bezier(.3,1.6,.5,1),background-color .15s,color .15s,opacity .2s}
+  .tool:not(:disabled):active,.icon-btn:active,.new-btn:active{transform:scale(.92);transition-duration:.06s,.15s,.15s,.2s}
+  .pad button.gotit{animation:gotit .5s ease-out}
+  @keyframes gotit{40%{transform:scale(1.1);background:var(--accent-soft)}}
+  .pad .smart.glow{animation:glow .5s ease-out}
+  @keyframes glow{0%{box-shadow:0 0 0 0 var(--accent)}60%{box-shadow:0 0 0 7px transparent}100%{box-shadow:0 0 0 3px var(--accent-soft)}}
+  .notes span{transform:scale(.45);transition:opacity .14s ease-out,transform .2s cubic-bezier(.3,1.5,.5,1)}
+  .notes span.on{transform:none}
+  .cell.gone::after{content:attr(data-g);position:absolute;inset:0;display:flex;align-items:center;justify-content:center;color:var(--user);font-weight:500;pointer-events:none;animation:gone .2s ease-in forwards}
+  @keyframes gone{to{opacity:0;transform:scale(.55)}}
+  .board-wrap.deal .cell:not(.pop) .v,.board-wrap.deal .notes{animation:deal .34s cubic-bezier(.2,.8,.3,1) both;animation-delay:var(--dl)}
+  @keyframes deal{from{opacity:0;transform:scale(.75)}}
+  #pauseCover.show{animation:coverIn .2s ease-out}
+  @keyframes coverIn{from{opacity:0}}
+  #toast{transition:opacity .2s,transform .32s cubic-bezier(.3,1.5,.5,1)}
+  .badge-pb{animation:pbIn .4s .55s cubic-bezier(.3,1.6,.5,1) both}
+  @keyframes pbIn{from{opacity:0;transform:scale(.6)}}
+  .coach .cm.fresh{animation:fresh .24s ease-out}
+  @keyframes fresh{from{opacity:.2;transform:translateY(3px)}}
+  #huntOv .nw{animation:ovFade .25s ease-out both}
+  #huntOv .pcell.nw,#huntOv .pc.nw,#huntOv .ex.nw{transform-box:fill-box;transform-origin:center;animation-name:ovPop;animation-duration:.3s;animation-timing-function:cubic-bezier(.3,1.5,.5,1)}
+  @keyframes ovFade{from{opacity:0}}
+  @keyframes ovPop{from{opacity:0;transform:scale(1.6)}}
+}
 </style>
 </head>
 <body>
@@ -305,6 +338,7 @@ const saveBuffer = () => LS.set('fs.buffer', buffer);
 
 // ---------- ui state ----------
 let sel = -1, notesMode = false, lockMode = false, lockDigit = 0, paused = false, modalOpen = false;
+let smartWasReady = false, lastG = null; // juice: previous render state, for one-shot transitions
 const G = () => games[tier];
 
 // ---------- worker ----------
@@ -341,7 +375,7 @@ function startGame(t, d) {
   games[t] = { tier: t, puzzle: d.puzzle, solution: d.solution, vals: d.puzzle.slice(), notes: Array(81).fill(0),
     elapsed: 0, solved: false, techs: d.techs, clues: d.clues, undo: [], redo: [], id: Date.now() };
   stats[t].started++; saveStats(); saveGames();
-  if (t === tier) { sel = -1; lockDigit = 0; paused = false; clearFx(); }
+  if (t === tier) { sel = -1; lockDigit = 0; paused = false; clearFx(); deal(); }
   render();
 }
 
@@ -349,7 +383,7 @@ function startGame(t, d) {
 const board = $('#board'), cells = [];
 for (let i = 0; i < 81; i++) {
   const el = document.createElement('div');
-  el.className = 'cell'; el.dataset.i = i;
+  el.className = 'cell'; el.dataset.i = i; el.style.setProperty('--dl', (ROW[i] + COL[i]) * 13 + 'ms');
   const v = document.createElement('span'); v.className = 'v';
   const n = document.createElement('div'); n.className = 'notes';
   const ns = [];
@@ -359,12 +393,24 @@ for (let i = 0; i < 81; i++) {
 }
 function clearFx() {
   $('#boardWrap').classList.remove('won');
-  cells.forEach(c => { c.el.classList.remove('flash', 'pop'); c.el.style.animationDelay = ''; });
+  cells.forEach(c => { c.el.classList.remove('flash', 'pop', 'gone', 'tick'); c.el.style.animationDelay = ''; });
+}
+// juice helpers: replay a transient class; all decorative motion is skipped under reduced motion
+const RMQ = window.matchMedia ? matchMedia('(prefers-reduced-motion: reduce)') : null;
+const motionOK = () => !(RMQ && RMQ.matches);
+const replay = (el, cls) => { el.classList.remove(cls); void el.offsetWidth; el.classList.add(cls); };
+let dealT = 0;
+function deal() {
+  if (!motionOK()) return;
+  const w = $('#boardWrap'); replay(w, 'deal');
+  clearTimeout(dealT); dealT = setTimeout(() => w.classList.remove('deal'), 650);
 }
 board.addEventListener('animationend', e => {
   const el = e.target.closest('.cell'); if (!el) return;
   if (e.animationName === 'pop') el.classList.remove('pop');
   if (e.animationName === 'warn') el.classList.remove('warn');
+  if (e.animationName === 'gone') el.classList.remove('gone');
+  if (e.animationName === 'tick') el.classList.remove('tick');
   if (e.animationName === 'flash') { el.classList.remove('flash'); el.style.animationDelay = ''; }
 });
 const pad = $('#pad'), padBtns = [];
@@ -376,6 +422,7 @@ for (let d = 1; d <= 9; d++) {
 const smartBtn = document.createElement('button'); smartBtn.className = 'erase smart'; smartBtn.dataset.d = 0; smartBtn.setAttribute('aria-label', 'Smart fill');
 smartBtn.innerHTML = '<svg viewBox="0 0 24 24"><path d="m4 20 11-11"/><path d="m13 7 4 4"/><path d="M18 2.5v3M16.5 4h3M20.5 8.5v2M19.5 9.5h2M9 3v2M8 4h2"/></svg><span class="sl">Smart</span>';
 pad.appendChild(smartBtn);
+pad.addEventListener('animationend', e => { const b = e.target.closest('button'); if (b) b.classList.remove('gotit', 'glow'); });
 
 // ---------- helpers ----------
 const fmt = ms => { const s = Math.floor(ms / 1000), h = Math.floor(s / 3600), m = Math.floor(s / 60) % 60, ss = s % 60; return (h ? h + ':' + String(m).padStart(2, '0') : m) + ':' + String(ss).padStart(2, '0'); };
@@ -448,13 +495,20 @@ function undo() {
   const g = G(); if (!g || g.solved || !g.undo.length) return;
   const ch = g.undo.pop();
   for (let k = ch.length - 1; k >= 0; k--) { const [i, ov, on] = ch[k]; g.vals[i] = ov; g.notes[i] = on; }
-  g.redo.push(ch); saveGames(); buzz(); render();
+  g.redo.push(ch); saveGames(); buzz(); markChanged(ch, false); render();
 }
 function redo() {
   const g = G(); if (!g || g.solved || !g.redo.length) return;
   const ch = g.redo.pop();
   for (const [i, , , nv, nn] of ch) { g.vals[i] = nv; g.notes[i] = nn; }
-  g.undo.push(ch); saveGames(); buzz(); afterChange();
+  g.undo.push(ch); saveGames(); buzz(); markChanged(ch, true); afterChange();
+}
+// undo/redo: tint the cells that changed so it is clear what moved; re-placed digits pop
+function markChanged(ch, fwd) {
+  for (const [i, ov, , nv] of ch) {
+    replay(cells[i].el, 'tick');
+    if (fwd && nv && nv !== ov && motionOK()) replay(cells[i].el, 'pop');
+  }
 }
 function restart() {
   const g = G(); if (!g) return;
@@ -519,11 +573,12 @@ function celebrateUnits(i) {
   units.forEach((U, k) => {
     if (U.every(c => g.vals[c] && !bad.has(c))) {
       any = true;
-      U.forEach((c, n) => { const el = cells[c].el; el.classList.remove('flash'); void el.offsetWidth; el.style.animationDelay = (n * 30) + 'ms'; el.classList.add('flash'); });
+      // ripple outward from the placed cell
+      U.forEach(c => { const el = cells[c].el; el.classList.remove('flash'); void el.offsetWidth; el.style.animationDelay = (Math.max(Math.abs(ROW[c] - ROW[i]), Math.abs(COL[c] - COL[i])) * 45) + 'ms'; el.classList.add('flash'); });
     }
   });
   const d = g.vals[i];
-  if (g.vals.filter(v => v === d).length === 9 && ![...bad].some(c => g.vals[c] === d)) any = true;
+  if (g.vals.filter(v => v === d).length === 9 && ![...bad].some(c => g.vals[c] === d)) { any = true; if (motionOK()) replay(padBtns[d - 1], 'gotit'); }
   if (any) buzz(20);
 }
 function afterChange() {
@@ -594,7 +649,7 @@ function render() {
     $('#metaL').textContent = TIERS[tier]; $('#metaR').textContent = '';
     cells.forEach(c => { c.el.className = c.base; c.v.textContent = ''; c.ns.forEach(s => s.className = ''); });
     $('#hintLine').textContent = '';
-    smartBtn.className = 'erase smart dim';
+    smartBtn.className = 'erase smart dim'; smartWasReady = false; lastG = null;
     drawScan(null); renderTrainUI(null);
     return;
   }
@@ -604,7 +659,10 @@ function render() {
   $('#redoBtn').disabled = g.solved || !g.redo.length;
   { const a = smartAnalyze(g, sel), sl = smartBtn.querySelector('.sl');
     smartBtn.classList.toggle('ready', a.state === 'ok'); smartBtn.classList.toggle('err', a.state === 'err'); smartBtn.classList.toggle('dim', a.state === 'none');
-    sl.textContent = a.state === 'ok' ? `Fill ${a.d}` : a.state === 'err' ? 'Clash!' : 'Smart'; }
+    sl.textContent = a.state === 'ok' ? `Fill ${a.d}` : a.state === 'err' ? 'Clash!' : 'Smart';
+    if (a.state === 'ok' && !smartWasReady && motionOK()) replay(smartBtn, 'glow');
+    smartWasReady = a.state === 'ok'; }
+  const sameGame = lastG === g; lastG = g;
   const bad = settings.conflicts ? conflicts(g) : new Set();
   const act = activeDigit(g);
   const abit = act ? 1 << (act - 1) : 0;
@@ -627,8 +685,10 @@ function render() {
     if (bad.has(i) && !g.puzzle[i]) cls += ' conf';
     else if (bad.has(i)) cls += ' conf-given';
     if (i === sel && !g.solved && !hunt) cls += ' sel';
-    const keep = c.el.className.match(/\b(flash|pop|warn)\b/g);
-    if (keep) cls += ' ' + keep.join(' ');
+    let keep = c.el.className.match(/\b(flash|pop|warn|gone|tick)\b/g) || [];
+    if (v) keep = keep.filter(k => k !== 'gone');
+    else if (sameGame && c.v.textContent && motionOK()) { c.el.dataset.g = c.v.textContent; keep = keep.filter(k => k !== 'gone'); keep.push('gone'); } // removed digit fades out
+    if (keep.length) cls += ' ' + keep.join(' ');
     c.el.className = cls;
     c.v.textContent = v || '';
     const nm = v ? 0 : g.notes[i];
@@ -706,7 +766,7 @@ document.querySelectorAll('#tiers button').forEach(b => b.onclick = () => {
   const t = +b.dataset.t; if (t === tier) return;
   tier = t; LS.set('fs.tier', t); sel = -1; lockDigit = 0; lockMode = false; paused = false;
   if (hunt) { hunt = null; } focusD = 0;
-  clearFx();
+  clearFx(); if (games[t]) deal();
   ensureGame(t); syncHunt(); pump(); render();
 });
 $('#newBtn').onclick = () => {
@@ -789,6 +849,11 @@ function showWin(g, pb) {
     <button class="btn primary" id="nextBtn">Next ${TIERS[g.tier]} puzzle</button>
     <button class="btn" data-close>Admire the grid</button>`);
   $('#nextBtn').onclick = () => { closeModal(); newGame(g.tier); };
+  if (motionOK()) { // count the final time up as the sheet arrives
+    const el = sheet.querySelector('.win-hero .big'), T = g.elapsed, t0 = performance.now(), D = 700;
+    const step = now => { const k = Math.min(1, Math.max(0, (now - t0) / D)); el.textContent = fmt(T * (1 - Math.pow(1 - k, 3))); if (k < 1 && el.isConnected) requestAnimationFrame(step); };
+    el.textContent = fmt(0); requestAnimationFrame(step);
+  }
 }
 function showStats() {
   const card = t => { const s = stats[t]; return `<div class="stat-card"><div class="t">${TIERS[t]}</div>
@@ -899,11 +964,11 @@ function explain(inst, cands) {
   const t = inst.tech, d = inst.digit;
   if (t === 'Pointing') { const ln = unitName(inst.line); return `Pointing: in box ${inst.box + 1}, every ${d} candidate sits in ${ln}. The box's ${d} has to be in ${ln}, so no other cell in ${ln} can be ${d}.`; }
   if (t === 'Box-line') { const ln = unitName(inst.line); return `Box-line: in ${ln}, every ${d} candidate sits inside box ${inst.box + 1}. The ${d} for ${ln} has to be in this box, so the box's other cells can't be ${d}.`; }
-  if (t === 'Naked pair' || t === 'Naked triple') { const ds = digitsOf(inst.digits), u = unitName(inst.unit); return `${t}: these ${inst.cells.length} cells in ${u} can only hold ${orList(ds)} between them. Those numbers get used up here, so remove ${andList(ds)} from the rest of ${u}.`; }
-  if (t === 'Hidden pair' || t === 'Hidden triple') { const ds = digitsOf(inst.digits), u = unitName(inst.unit); return `${t}: in ${u}, ${andList(ds)} can only go in these ${inst.cells.length} cells. So these cells must hold ${andList(ds)}, and their other candidates can go.`; }
+  if (t === 'Naked pair' || t === 'Naked triple') { const ds = digitsOf(inst.digits), u = unitName(inst.unit); return `${t}: these ${nw(inst.cells.length)} cells in ${u} can only hold ${orList(ds)} between them. Those numbers get used up here, so remove ${andList(ds)} from the rest of ${u}.`; }
+  if (t === 'Hidden pair' || t === 'Hidden triple') { const ds = digitsOf(inst.digits), u = unitName(inst.unit); return `${t}: in ${u}, ${andList(ds)} can only go in these ${nw(inst.cells.length)} cells. So these cells must hold ${andList(ds)}, and their other candidates can go.`; }
   if (t === 'X-Wing' || t === 'Swordfish') {
     const f = fishNames(inst), n = inst.base.length;
-    return `${t} on ${d}: in ${f.lines}, ${d} can only go in ${f.covers}. Each of those ${nw(n)} ${f.line}s needs its own ${d}, so they fill the ${d} for all ${nw(n)} ${f.cover}s between them. Remove ${d} from the rest of ${f.covers}.`;
+    return `${t} on ${d}: in ${f.lines}, ${d} can only go in ${f.covers}. Each of those ${nw(n)} ${f.line}s needs its own ${d}, so between them they supply the ${d} for ${n === 2 ? 'both' : 'all three'} ${f.cover}s. Remove ${d} from the rest of ${f.covers}.`;
   }
   if (t === 'XY-Wing') {
     const w = wingParts(inst, cands);
@@ -1068,7 +1133,7 @@ function startDrill() {
   waitDrill = false;
   games[4] = { tier: 4, puzzle: snap.vals.slice(), solution: snap.vals.slice(), vals: snap.vals.slice(), notes: snap.cands.slice(), elapsed: 0, solved: false,
     techs: {}, clues: snap.vals.filter(v => v).length, undo: [], redo: [], id: Date.now(), drillTech: snap.tech, drillKnown: trainTech !== 'Mix' };
-  saveGames(); focusD = 0; clearFx();
+  saveGames(); focusD = 0; clearFx(); deal();
   hunt = makeHunt('drill', snap.tech, trainTech !== 'Mix');
   if (!hunt) { games[4] = null; startDrill(); return; }
   harvest(); render();
@@ -1116,8 +1181,9 @@ function startCoach() {
 function exitHunt() { if (!hunt) return; if (hunt.src === 'drill') { startDrill(); return; } hunt = null; focusD = 0; updateCoach(); render(); }
 // ----- drawing -----
 function notePos(i, d) { return [COL[i] * 10 + (((d - 1) % 3) + 0.5) * 10 / 3, ROW[i] * 10 + ((((d - 1) / 3) | 0) + 0.5) * 10 / 3]; }
+let huntPrev = new Set(); // shapes drawn last time; only newly appearing ones animate in
 function drawHunt(g) {
-  if (!hunt || !g) { huntEl.innerHTML = ''; return; }
+  if (!hunt || !g) { huntEl.innerHTML = ''; huntPrev = new Set(); return; }
   const h = hunt, f = n => +n.toFixed(2), cands = stFrom(g).cands;
   let s = '';
   for (const u of h.regions) {
@@ -1153,6 +1219,10 @@ function drawHunt(g) {
     const [x, y] = notePos(c, d), r = 1.25;
     s += `<path class="ex" d="M${f(x - r)} ${f(y - r)}L${f(x + r)} ${f(y + r)}M${f(x + r)} ${f(y - r)}L${f(x - r)} ${f(y + r)}"/>`;
   }
+  const parts = s.split(/(?=<)/).filter(Boolean);
+  let k = 0;
+  s = parts.map(p => huntPrev.has(p) ? p : p.replace('class="', p.includes('class="ex"') ? `style="animation-delay:${Math.min(k++, 12) * 30}ms" class="nw ` : 'class="nw ')).join('');
+  huntPrev = new Set(parts);
   huntEl.innerHTML = `<svg viewBox="0 0 90 90" preserveAspectRatio="none" aria-hidden="true">${s}</svg>`;
 }
 const colCounts = document.getElementById('colCounts'), rowCounts = document.getElementById('rowCounts');
@@ -1173,6 +1243,10 @@ function drawCounts(g) {
     set(rowCounts.children[k], rc, rp); set(colCounts.children[k], cc, cp);
   }
 }
+function setCoachMsg(t) { // new guidance text eases in so the change registers
+  const m = $('#coachMsg'); if (m.textContent === t) return;
+  m.textContent = t; if (t && motionOK()) replay(m, 'fresh');
+}
 function renderTrainUI(g) {
   document.body.classList.toggle('hunt', !!hunt || tier === 4);
   document.body.classList.toggle('train', tier === 4);
@@ -1182,11 +1256,11 @@ function renderTrainUI(g) {
     const title = h.src === 'coach' ? 'Coach' : (h.techKnown ? (h.done ? h.solvedInst.tech : h.tech) : 'Mystery pattern');
     const st = h.techKnown && tstats[h.done ? h.solvedInst.tech : h.tech];
     $('#coachTitle').innerHTML = `<span>${title}${h.done ? (h.revealed ? ' · revealed' : ' · found!') : ''}</span><span class="cs">${st ? `${st.clean} found · ${st.hinted} hinted · ${st.revealed} shown` : ''}</span>`;
-    $('#coachMsg').textContent = h.msg;
+    setCoachMsg(h.msg);
     card.classList.toggle('ok', h.done && !h.revealed);
   } else if (tier === 4) {
     $('#coachTitle').innerHTML = '<span>Training</span>';
-    $('#coachMsg').textContent = waitDrill ? `Searching generated puzzles for ${trainTech === 'Mix' ? 'drills' : article(trainTech) + ' ' + trainTech}. Rare ones like Swordfish can take a few seconds.` : '';
+    setCoachMsg(waitDrill ? `Searching generated puzzles for ${trainTech === 'Mix' ? 'drills' : article(trainTech) + ' ' + trainTech}. Rare ones like Swordfish can take a few seconds.` : '');
   }
   $('#hintBtn').disabled = !hunt || hunt.done;
   $('#hintLbl').textContent = !hunt || hunt.done ? 'Show me' : hunt.stage === 0 ? 'Show me' : hunt.stage === 1 ? 'Show more' : 'Reveal';
@@ -1210,6 +1284,7 @@ $('#exitBtn').onclick = exitHunt;
 $('#trainerBtn').onclick = startCoach;
 
 // ---------- boot ----------
+if (games[tier]) deal();
 ensureGame(tier);
 syncHunt();
 pump();
