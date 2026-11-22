@@ -14,13 +14,13 @@
   --bg:#f3efe7;--panel:#fffdf8;--ink:#23222a;--muted:#7a7684;--line:#d6cfc2;--thick:#3a3842;
   --accent:#2a6f97;--accent-soft:#d7e9f3;--user:#2a6f97;--peer:#efe9de;--same:#f7dc9c;--sel:#bcdff1;
   --conf:#cf3b3b;--confbg:#f8d6d2;--note:#8c8796;--notehi:#a8650a;--btn:#e9e3d7;--btn-ink:#3a3842;
-  --flash:#cfeec4;--blocked:#e6e0d4;--shadow:0 10px 30px rgba(40,30,10,.12);
+  --flash:#cfeec4;--blocked:#e6e0d4;--scan:rgba(58,56,66,.22);--scan-bg:rgba(58,56,66,.05);--shadow:0 10px 30px rgba(40,30,10,.12);
 }
 [data-theme=dark]{
   --bg:#121317;--panel:#1b1d23;--ink:#ebe8e1;--muted:#8f8c98;--line:#30333c;--thick:#7f7c89;
   --accent:#7cc4e4;--accent-soft:#1e3a4a;--user:#7cc4e4;--peer:#22252d;--same:#5b4a1c;--sel:#1f4b64;
   --conf:#ff7b72;--confbg:#4b2424;--note:#8f8c98;--notehi:#f2b84b;--btn:#252830;--btn-ink:#dcd9d2;
-  --flash:#294a27;--blocked:#353844;--shadow:0 10px 30px rgba(0,0,0,.45);
+  --flash:#294a27;--blocked:#353844;--scan:rgba(235,232,225,.17);--scan-bg:rgba(235,232,225,.04);--shadow:0 10px 30px rgba(0,0,0,.45);
 }
 *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
 html,body{margin:0;height:100%;background:var(--bg);color:var(--ink);font-family:Outfit,system-ui,-apple-system,"Segoe UI",sans-serif;touch-action:manipulation;-webkit-user-select:none;user-select:none;overscroll-behavior:none}
@@ -58,8 +58,10 @@ header{width:var(--cw);display:flex;align-items:center;justify-content:space-bet
 .cell.given{font-weight:600}
 .cell.user .v{color:var(--user);font-weight:500}
 .cell.peer{background:var(--peer)}
-.cell.blocked{background:var(--blocked)}
 [data-theme=dark] .cell.blocked .notes span.on{opacity:.55}
+#scan{position:absolute;inset:2.5px;pointer-events:none;z-index:2}
+#scan svg{display:block;width:100%;height:100%;animation:scanIn .18s ease-out}
+@keyframes scanIn{from{opacity:0}to{opacity:1}}
 .cell.same{background:var(--same)}
 .cell.sel{background:var(--sel)}
 .cell.conf{background:var(--confbg)}
@@ -172,6 +174,7 @@ header{width:var(--cw);display:flex;align-items:center;justify-content:space-bet
   <div class="meta"><span id="metaL"></span><span id="metaR"></span></div>
   <div class="board-wrap" id="boardWrap">
     <div id="board"></div>
+    <div id="scan"></div>
     <div class="cover" id="pauseCover"><svg viewBox="0 0 24 24"><path d="M8 5.5v13a1 1 0 0 0 1.5.9l10-6.5a1 1 0 0 0 0-1.7l-10-6.5A1 1 0 0 0 8 5.5z"/></svg>Paused - tap to resume</div>
     <div class="cover" id="genCover"><div class="spinner"></div><div id="genTxt">Generating a smooth puzzle</div></div>
   </div>
@@ -471,6 +474,32 @@ function win() {
 }
 
 // ---------- render ----------
+// Scan assist overlay: one striped layer, clipped to the merged shape of blocked cells
+const scanEl = document.getElementById('scan');
+let scanKey = '';
+function drawScan(blocked) {
+  const key = blocked && blocked.size ? [...blocked].sort((a, b) => a - b).join(',') : '';
+  if (key === scanKey) return;
+  scanKey = key;
+  if (!key) { scanEl.innerHTML = ''; return; }
+  const B = new Uint8Array(81); blocked.forEach(i => B[i] = 1);
+  const U = 10, m = 0.7, r = 2, f = n => +n.toFixed(2);
+  let sh = '';
+  for (let i = 0; i < 81; i++) {
+    if (!B[i]) continue;
+    const x = COL[i] * U, y = ROW[i] * U, c = COL[i], rw = ROW[i];
+    sh += `<rect x="${f(x + m)}" y="${f(y + m)}" width="${f(U - 2 * m)}" height="${f(U - 2 * m)}" rx="${r}"/>`;
+    const right = c < 8 && B[i + 1], down = rw < 8 && B[i + 9];
+    if (right) sh += `<rect x="${f(x + U - m - r)}" y="${f(y + m)}" width="${f(2 * (m + r))}" height="${f(U - 2 * m)}"/>`;
+    if (down) sh += `<rect x="${f(x + m)}" y="${f(y + U - m - r)}" width="${f(U - 2 * m)}" height="${f(2 * (m + r))}"/>`;
+    if (right && down && B[i + 10]) sh += `<rect x="${f(x + U - m - r)}" y="${f(y + U - m - r)}" width="${f(2 * (m + r))}" height="${f(2 * (m + r))}"/>`;
+  }
+  scanEl.innerHTML = `<svg viewBox="0 0 90 90" preserveAspectRatio="none" aria-hidden="true">
+    <defs><pattern id="scanStripes" width="2.8" height="2.8" patternUnits="userSpaceOnUse" patternTransform="rotate(45)">
+      <rect width="2.8" height="2.8" style="fill:var(--scan-bg)"/><rect width="1.15" height="2.8" style="fill:var(--scan)"/></pattern>
+    <clipPath id="scanClip">${sh}</clipPath></defs>
+    <rect width="90" height="90" fill="url(#scanStripes)" clip-path="url(#scanClip)"/></svg>`;
+}
 function render() {
   const g = G();
   // tiers
@@ -494,6 +523,7 @@ function render() {
     cells.forEach(c => { c.el.className = c.base; c.v.textContent = ''; c.ns.forEach(s => s.className = ''); });
     $('#hintLine').textContent = '';
     smartBtn.className = 'erase smart dim';
+    drawScan(null);
     return;
   }
   $('#metaL').textContent = `${TIERS[tier]} · ${g.clues} clues`;
@@ -512,6 +542,8 @@ function render() {
     blocked = new Set();
     for (let i = 0; i < 81; i++) if (g.vals[i] === act) PEERS[i].forEach(p => blocked.add(p));
   }
+  if (blocked) for (const c of [...blocked]) if (g.vals[c]) blocked.delete(c);
+  drawScan(blocked);
   const counts = Array(10).fill(0);
   for (let i = 0; i < 81; i++) {
     const c = cells[i], v = g.vals[i];
@@ -694,7 +726,7 @@ const SETTING_ROWS = [
   ['peers', 'Highlight row, column and box', 'Shade the lines through the selected cell'],
   ['same', 'Highlight matching numbers', 'Every instance of the selected number'],
   ['noteHi', 'Highlight matching notes', 'Notes containing the selected number'],
-  ['scan', 'Scan assist', 'Shade cells where the selected number cannot go'],
+  ['scan', 'Scan assist', 'Stripe over the cells where the selected number cannot go'],
   ['conflicts', 'Show rule conflicts', 'Duplicates in a row, column or box turn red'],
   ['autoClean', 'Auto-clear notes', 'Placing a number removes it from notes in its row, column and box'],
   ['counts', 'Show remaining counts', 'How many of each number are left, under the pad'],
