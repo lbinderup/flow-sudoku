@@ -8,7 +8,7 @@
 <title>Flow Sudoku</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&family=Patrick+Hand&display=swap" rel="stylesheet">
 <style>
 :root{
   --bg:#f3efe7;--panel:#fffdf8;--ink:#23222a;--muted:#7a7684;--line:#d6cfc2;--thick:#3a3842;
@@ -74,7 +74,7 @@ header{width:var(--cw);display:flex;align-items:center;justify-content:space-bet
 @keyframes pop{0%{transform:scale(.6);opacity:.3}70%{transform:scale(1.12)}100%{transform:scale(1)}}
 .v{pointer-events:none}
 .notes{position:absolute;inset:1px;display:grid;grid-template-columns:repeat(3,1fr);grid-template-rows:repeat(3,1fr);pointer-events:none}
-.notes span{display:flex;align-items:center;justify-content:center;font-size:calc(var(--bs) / 34);color:var(--note);opacity:0;font-weight:500}
+.notes span{display:flex;align-items:center;justify-content:center;font-family:'Patrick Hand',Outfit,system-ui,sans-serif;font-size:calc(var(--bs) / 29);line-height:1;color:var(--note);opacity:0;font-weight:400}
 .notes span.on{opacity:1}
 .notes span.hi{color:var(--panel);background:var(--notehi);border-radius:50%;width:84%;height:84%;margin:auto;font-weight:600}
 [data-theme=dark] .notes span.hi{color:#1b1d23}
@@ -115,7 +115,7 @@ header{width:var(--cw);display:flex;align-items:center;justify-content:space-bet
 .pad button.lock{background:var(--accent);}
 .pad button.lock .d,.pad button.lock .n{color:var(--panel)}
 [data-theme=dark] .pad button.lock .d,[data-theme=dark] .pad button.lock .n{color:#0f1a20}
-.pad.notes-mode .d{font-size:clamp(32px,calc(var(--cw) / 11),44px);font-weight:600;color:var(--notehi);line-height:1}
+.pad.notes-mode .d{font-family:'Patrick Hand',Outfit,system-ui,sans-serif;font-size:clamp(38px,calc(var(--cw) / 9),52px);font-weight:400;color:var(--notehi);line-height:1}
 .hint-line{font-size:12px;color:var(--muted);min-height:15px;text-align:center}
 /* modal */
 .modal{position:fixed;inset:0;background:rgba(10,10,14,.42);display:flex;align-items:flex-end;justify-content:center;z-index:20;opacity:0;pointer-events:none;transition:opacity .2s}
