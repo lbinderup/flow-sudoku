@@ -107,7 +107,7 @@ header{width:var(--cw);display:flex;align-items:center;justify-content:space-bet
 .pad{width:var(--cw);display:grid;grid-template-columns:repeat(5,1fr);gap:7px}
 .pad button{background:var(--btn);border-radius:16px;padding:6px 0 5px;justify-content:center;display:flex;flex-direction:column;align-items:center;gap:1px;transition:transform .08s,background .15s,opacity .2s}
 .pad button:active{transform:scale(.93)}
-.pad .d{font-size:clamp(40px,calc(var(--cw) / 7.5),64px);font-weight:500;line-height:1.05;color:var(--accent)}
+.pad .d{--dh:calc(clamp(40px,calc(var(--cw) / 7.5),64px) * 1.05);font-size:clamp(40px,calc(var(--cw) / 7.5),64px);font-weight:500;line-height:1.05;color:var(--accent);height:var(--dh);display:flex;align-items:center;justify-content:center}
 .pad .erase svg{width:clamp(30px,calc(var(--cw) / 11),44px);height:clamp(30px,calc(var(--cw) / 11),44px);fill:none;stroke:var(--btn-ink);stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
 .pad .n{font-size:13px;color:var(--muted);height:15px}
 .pad.nocount .n{visibility:hidden}
@@ -115,7 +115,7 @@ header{width:var(--cw);display:flex;align-items:center;justify-content:space-bet
 .pad button.lock{background:var(--accent);}
 .pad button.lock .d,.pad button.lock .n{color:var(--panel)}
 [data-theme=dark] .pad button.lock .d,[data-theme=dark] .pad button.lock .n{color:#0f1a20}
-.pad.notes-mode .d{font-size:clamp(32px,calc(var(--cw) / 11),44px);font-weight:600;color:var(--notehi);line-height:1.43}
+.pad.notes-mode .d{font-size:clamp(32px,calc(var(--cw) / 11),44px);font-weight:600;color:var(--notehi);line-height:1}
 .hint-line{font-size:12px;color:var(--muted);min-height:15px;text-align:center}
 /* modal */
 .modal{position:fixed;inset:0;background:rgba(10,10,14,.42);display:flex;align-items:flex-end;justify-content:center;z-index:20;opacity:0;pointer-events:none;transition:opacity .2s}
@@ -171,7 +171,7 @@ body.hunt .board-wrap{margin:14px 0 0 18px}
 body.hunt .pad{grid-template-columns:repeat(9,1fr);gap:4px}
 body.hunt .pad .smart{display:none}
 body.hunt .pad button{padding:8px 0;border-radius:11px}
-body.hunt .pad .d{font-size:clamp(20px,calc(var(--cw) / 15),28px)}
+body.hunt .pad .d,body.hunt .pad.notes-mode .d{--dh:calc(clamp(20px,calc(var(--cw) / 15),28px) * 1.2);font-size:clamp(20px,calc(var(--cw) / 15),28px);font-weight:500;color:var(--accent)}
 body.hunt .pad .n{display:none}
 body.hunt .pad button.focus{background:var(--notehi)}
 body.hunt .pad button.focus .d{color:var(--panel)}
